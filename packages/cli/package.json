@@ -1,0 +1,22 @@
+{
+  "name": "@rekkon/cli",
+  "version": "0.1.0",
+  "description": "CLI for Rekkon codebase analysis",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "rekkon": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rekkon/core": "0.1.0",
+    "@rekkon/parser": "0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

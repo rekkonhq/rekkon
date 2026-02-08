@@ -1,0 +1,23 @@
+{
+  "name": "rekkon",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "description": "Understand your codebase. Architecture analysis for AI agents and developers.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0"
+  }
+}

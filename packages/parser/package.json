@@ -1,0 +1,20 @@
+{
+  "name": "@rekkon/parser",
+  "version": "0.1.0",
+  "description": "Tree-sitter based codebase parser for Rekkon",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rekkon/core": "0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
