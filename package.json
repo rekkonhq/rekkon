@@ -13,6 +13,7 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
+    "analyze": "node packages/cli/dist/index.js analyze",
     "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {
