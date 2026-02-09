@@ -122,33 +122,35 @@ export function getHtmlTemplate(): string {
 
     .d-metrics {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 14px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      margin-top: 12px;
+      background: rgba(100, 130, 180, 0.06);
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     .d-metric {
-      padding: 10px;
-      border-radius: 8px;
-      background: rgba(10, 18, 35, 0.6);
-      border: 1px solid rgba(100, 130, 180, 0.08);
+      padding: 10px 8px;
+      background: rgba(8, 14, 28, 0.8);
+      text-align: center;
     }
 
     .d-metric-val {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
-      line-height: 1.1;
+      line-height: 1;
       color: #e8eef8;
       font-family: "IBM Plex Mono", "Cascadia Code", ui-monospace, monospace;
     }
 
     .d-metric-label {
-      font-size: 9px;
+      font-size: 8px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: rgba(148, 175, 220, 0.45);
+      color: rgba(148, 175, 220, 0.4);
       font-weight: 600;
-      margin-top: 3px;
+      margin-top: 4px;
     }
 
     .d-divider {
@@ -178,19 +180,19 @@ export function getHtmlTemplate(): string {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 7px 10px;
-      border-radius: 6px;
-      background: rgba(10, 18, 35, 0.5);
-      border: 1px solid rgba(100, 130, 180, 0.06);
+      padding: 6px 8px;
+      border-radius: 5px;
+      background: rgba(10, 18, 35, 0.4);
+      border: 1px solid rgba(100, 130, 180, 0.05);
       color: rgba(200, 215, 240, 0.85);
-      font-size: 12px;
+      font-size: 11.5px;
       font-family: "IBM Plex Mono", "Cascadia Code", ui-monospace, monospace;
       transition: border-color 0.12s ease, background 0.12s ease;
       cursor: default;
     }
     .d-conn-item:hover {
-      border-color: rgba(100, 130, 180, 0.2);
-      background: rgba(15, 25, 45, 0.6);
+      border-color: rgba(100, 130, 180, 0.18);
+      background: rgba(15, 25, 45, 0.5);
     }
 
     .d-conn-dot {
@@ -198,6 +200,14 @@ export function getHtmlTemplate(): string {
       height: 5px;
       border-radius: 50%;
       flex-shrink: 0;
+    }
+
+    .d-conn-meta {
+      margin-left: auto;
+      font-size: 9px;
+      color: rgba(148, 175, 220, 0.3);
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
     .d-empty {
@@ -246,7 +256,7 @@ export function getHtmlTemplate(): string {
       <button id="fit" class="btn" type="button">Fit</button>
       <button id="zin" class="btn" type="button">+</button>
       <button id="zout" class="btn" type="button">-</button>
-      <button id="edges" class="btn active" type="button">Edges</button>
+      <button id="edges" class="btn active" type="button">Imports</button>
     </div>
     <div class="title">Layer Filter</div>
     <div id="layers"></div>
@@ -349,6 +359,7 @@ export function getHtmlTemplate(): string {
         }
         mods.sort(function(x,y){if(y.w!==x.w)return y.w-x.w;if(y.files.length!==x.files.length)return y.files.length-x.files.length;return x.label.localeCompare(y.label);});
         layout(mods);
+        buildSkeletons(mods);
         var files=Object.keys(byId).map(function(x){return byId[x];}),counts=Object.create(null);
         s.maxLoc=1;
         for(var z=0;z<files.length;z++)if(files[z].loc>s.maxLoc)s.maxLoc=files[z].loc;
@@ -373,6 +384,60 @@ export function getHtmlTemplate(): string {
           else{m.ex=m.r;m.ey=m.r;}
           m.ex=Math.max(m.ex,20);
           m.ey=Math.max(m.ey,20);
+        }
+      }
+
+      function buildSkeletons(mods){
+        for(var i=0;i<mods.length;i++){
+          var m=mods[i];
+          m.skeleton=[];
+
+          if(m.files.length<=1)continue;
+
+          if(m.files.length===2){
+            m.skeleton.push([0,1]);
+            continue;
+          }
+
+          var visited={};
+          var order=[];
+          var bestStart=0,bestDist=Infinity;
+          for(var si=0;si<m.files.length;si++){
+            var dx=m.files[si].x-m.x;
+            var dy=m.files[si].y-m.y;
+            var d=dx*dx+dy*dy;
+            if(d<bestDist){bestDist=d;bestStart=si;}
+          }
+
+          var current=bestStart;
+          visited[current]=true;
+          order.push(current);
+
+          while(order.length<m.files.length){
+            var nearest=-1,nearDist=Infinity;
+            for(var ni=0;ni<m.files.length;ni++){
+              if(visited[ni])continue;
+              var ndx=m.files[ni].x-m.files[current].x;
+              var ndy=m.files[ni].y-m.files[current].y;
+              var nd=ndx*ndx+ndy*ndy;
+              if(nd<nearDist){nearDist=nd;nearest=ni;}
+            }
+            if(nearest===-1)break;
+            m.skeleton.push([current,nearest]);
+            visited[nearest]=true;
+            order.push(nearest);
+            current=nearest;
+          }
+
+          if(m.files.length>=4&&order.length>=4){
+            m.skeleton.push([order[order.length-1],order[1]]);
+          }
+
+          if(m.files.length>=6&&order.length>=6){
+            var midIdx=Math.floor(order.length/2);
+            var crossIdx=Math.min(midIdx+2,order.length-1);
+            if(midIdx!==crossIdx)m.skeleton.push([order[midIdx],order[crossIdx]]);
+          }
         }
       }
 
@@ -452,10 +517,18 @@ export function getHtmlTemplate(): string {
       function drawReq(){if(s.queued)return;s.queued=true;requestAnimationFrame(function(){s.queued=false;draw();});}
 
       function draw(){
-        var w=ui.c.clientWidth,h=ui.c.clientHeight;if(w<=0||h<=0)return;
-        ctx.clearRect(0,0,w,h);bg(w,h);
-        var vf=visibleFiles(),vis=Object.create(null);for(var i=0;i<vf.length;i++)vis[vf[i].id]=true;
-        var fz=focus();nebula(vis);if(s.edgesOn)drawEdges(vis,fz);stars(vf,fz);labels(vf,fz);
+        var w=ui.c.clientWidth,h=ui.c.clientHeight;
+        if(w<=0||h<=0)return;
+        ctx.clearRect(0,0,w,h);
+        bg(w,h);
+        var vf=visibleFiles(),vis=Object.create(null);
+        for(var i=0;i<vf.length;i++)vis[vf[i].id]=true;
+        var fz=focus();
+        nebula(vis);
+        drawSkeletons(vis);
+        if(s.edgesOn)drawEdges(vis,fz);
+        stars(vf,fz);
+        labels(vf,fz);
       }
 
       function bg(w,h){
@@ -625,15 +698,59 @@ export function getHtmlTemplate(): string {
                 ctx.beginPath();
                 ctx.moveTo(p.x,anchorStartY);
                 ctx.lineTo(p.x,anchorEndY);
-                ctx.strokeStyle=rgba(pl.star,labelAlpha*0.2);
+                ctx.strokeStyle=rgba(pl.star,labelAlpha*0.35);
                 ctx.lineWidth=0.5;
                 ctx.stroke();
-                ctx.fillStyle=rgba(pl.star,labelAlpha*0.25);
+                ctx.fillStyle=rgba(pl.star,labelAlpha*0.4);
                 ctx.beginPath();
-                ctx.arc(p.x,anchorEndY,1.5,0,Math.PI*2);
+                ctx.arc(p.x,anchorEndY,2,0,Math.PI*2);
                 ctx.fill();
               }
             }
+          }
+        }
+      }
+
+      function drawSkeletons(vis){
+        var fzId=s.sel||s.hover;
+        var fzFile=fzId?s.byId[fzId]:null;
+        var fzModLabel=fzFile?fzFile.ml:null;
+
+        for(var i=0;i<s.mods.length;i++){
+          var m=s.mods[i];
+          if(!m.skeleton||!m.skeleton.length)continue;
+
+          var hasVisible=false;
+          for(var fi=0;fi<m.files.length;fi++){
+            if(vis[m.files[fi].id]){hasVisible=true;break;}
+          }
+          if(!hasVisible)continue;
+
+          var pl=palette(m.layer);
+          var isFocusedModule=fzModLabel&&m.label===fzModLabel;
+          var baseAlpha=isFocusedModule?0.35:0.12;
+          var baseWidth=isFocusedModule?0.9:0.6;
+
+          if(fzId&&!isFocusedModule){
+            baseAlpha=0.05;
+            baseWidth=0.4;
+          }
+
+          for(var si=0;si<m.skeleton.length;si++){
+            var pair=m.skeleton[si];
+            var f1=m.files[pair[0]];
+            var f2=m.files[pair[1]];
+            if(!f1||!f2)continue;
+            if(!vis[f1.id]||!vis[f2.id])continue;
+
+            var p1=toScreen(f1.x,f1.y);
+            var p2=toScreen(f2.x,f2.y);
+
+            ctx.setLineDash([]);
+            ctx.strokeStyle=rgba(pl.star,baseAlpha);
+            ctx.lineWidth=baseWidth;
+            curvedLine(p1.x,p1.y,p2.x,p2.y);
+            ctx.stroke();
           }
         }
       }
@@ -669,6 +786,7 @@ export function getHtmlTemplate(): string {
               var focusNode=s.byId[fz.id],focusColor=palette(focusNode.layer).star,sp=toScreen(sf.x,sf.y),tp=toScreen(tf.x,tf.y);
               ctx.lineWidth=w;
               ctx.strokeStyle=rgba(focusColor,a);
+              ctx.setLineDash([]);
               curvedLine(sp.x,sp.y,tp.x,tp.y);
               ctx.stroke();
               continue;
@@ -681,8 +799,11 @@ export function getHtmlTemplate(): string {
           var sp2=toScreen(sf.x,sf.y),tp2=toScreen(tf.x,tf.y);
           ctx.lineWidth=w;
           ctx.strokeStyle="rgba("+lineColor+","+a.toFixed(3)+")";
+          if(fz.id)ctx.setLineDash([3,5]);
+          else ctx.setLineDash([4,4]);
           curvedLine(sp2.x,sp2.y,tp2.x,tp2.y);
           ctx.stroke();
+          ctx.setLineDash([]);
         }
       }
 
@@ -785,9 +906,9 @@ export function getHtmlTemplate(): string {
           var on=!fz.id||fz.link[f.id];
           var importance=f.loc/s.maxLoc;
           var showThreshold;
-          if(importance>0.5)showThreshold=0.7;
-          else if(importance>0.2)showThreshold=1.2;
-          else showThreshold=2.0;
+          if(importance>0.35)showThreshold=0.6;
+          else if(importance>0.12)showThreshold=0.95;
+          else showThreshold=1.8;
           var isActive=s.hover===f.id||s.sel===f.id;
           var isConnected=fz.id&&fz.link[f.id];
           if(isConnected)showThreshold*=0.6;
@@ -921,54 +1042,70 @@ export function getHtmlTemplate(): string {
         var im=uniq(f.im.map(function(i){return s.byId[i];}).filter(Boolean));
         var dp=uniq(f.dep.map(function(i){return s.byId[i];}).filter(Boolean));
         var pl=palette(f.layer);
-        var h="";
-        h+='<div class="d-header">';
-        h+='<div class="d-star-icon" style="background:radial-gradient(circle,'+esc(pl.star)+' 0%, transparent 70%);box-shadow:0 0 12px '+esc(pl.star)+'44,0 0 4px '+esc(pl.star)+'88"></div>';
-        h+='<div>';
-        h+='<h2 class="d-title">'+esc(f.label)+'</h2>';
+        var starColor=jitterColor(pl.star,f.jitter||0);
+        var h='';
+
+        h+='<div class="d-header" style="padding-bottom:10px;margin-bottom:10px">';
+        h+='<div class="d-star-icon" style="width:28px;height:28px;background:radial-gradient(circle,'+esc(starColor)+' 0%, transparent 70%);box-shadow:0 0 10px '+esc(starColor)+'44"></div>';
+        h+='<div style="min-width:0">';
+        h+='<h2 class="d-title" style="font-size:15px">'+esc(f.label)+'</h2>';
         h+='<p class="d-path">'+esc(f.path)+'</p>';
-        h+='<div class="d-badge" style="background:'+esc(pl.star)+'18;color:'+esc(pl.star)+'">'+
+        h+='</div></div>';
+
+        h+='<div style="display:flex;gap:5px;flex-wrap:wrap">';
+        h+='<div class="d-badge" style="background:'+esc(pl.star)+'15;color:'+esc(pl.star)+';border:1px solid '+esc(pl.star)+'25">'+
              '<span class="d-conn-dot" style="background:'+esc(pl.star)+'"></span>'+
-             esc(f.layer)+' &middot; '+esc(f.ml)+'</div>';
-        h+='</div></div>';
-        h+='<div class="d-metrics">';
-        h+=dMetric(fmt(f.loc),"Lines of Code");
-        h+=dMetric(fmt(f.cx),"Complexity");
-        h+=dMetric(fmt(f.im.length),"Imports");
-        h+=dMetric(fmt(f.dep.length),"Dependents");
+             esc(f.layer)+'</div>';
+        h+='<div class="d-badge" style="background:rgba(100,130,180,0.08);color:rgba(180,200,230,0.6);border:1px solid rgba(100,130,180,0.1)">'+
+             esc(f.ml)+'</div>';
         h+='</div>';
-        h+='<div style="margin-top:8px"><div class="d-metric" style="text-align:center">';
-        h+='<div class="d-metric-val">'+fmt(f.ec)+'</div>';
-        h+='<div class="d-metric-label">Exports</div>';
-        h+='</div></div>';
+
+        h+='<div class="d-metrics">';
+        h+=dMetric(fmt(f.loc),'LOC');
+        h+=dMetric(fmt(f.cx),'Complexity');
+        h+=dMetric(fmt(f.ec),'Exports');
+        h+='</div>';
+
+        h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:1px;background:rgba(100,130,180,0.06);border-radius:0 0 8px 8px;overflow:hidden">';
+        h+=dMetric(fmt(f.im.length),'Imports');
+        h+=dMetric(fmt(f.dep.length),'Dependents');
+        h+='</div>';
+
         h+='<div class="d-divider"></div>';
-        h+='<div class="d-sec-title">Imports</div>';
-        h+='<div class="d-conn-list">';
+
         if(im.length){
+          h+='<div class="d-sec-title">Imports <span style="opacity:0.35;font-weight:400">('+im.length+')</span></div>';
+          h+='<div class="d-conn-list">';
           for(var i=0;i<im.length;i++){
             var ipl=palette(im[i].layer);
             h+='<div class="d-conn-item">'+
-                 '<span class="d-conn-dot" style="background:'+esc(ipl.star)+';box-shadow:0 0 4px '+esc(ipl.star)+'66"></span>'+
-                 esc(im[i].label)+'</div>';
+                 '<span class="d-conn-dot" style="background:'+esc(ipl.star)+';box-shadow:0 0 3px '+esc(ipl.star)+'55"></span>'+
+                 '<span style="min-width:0;overflow:hidden;text-overflow:ellipsis">'+esc(im[i].label)+'</span>'+
+                 '<span class="d-conn-meta">'+fmt(im[i].loc)+' loc</span>'+
+                 '</div>';
           }
-        }else{
-          h+='<div class="d-empty">No file imports</div>';
+          h+='</div>';
         }
-        h+='</div>';
-        h+='<div class="d-divider"></div>';
-        h+='<div class="d-sec-title">Dependents</div>';
-        h+='<div class="d-conn-list">';
+
         if(dp.length){
+          if(im.length)h+='<div style="height:8px"></div>';
+          h+='<div class="d-sec-title">Dependents <span style="opacity:0.35;font-weight:400">('+dp.length+')</span></div>';
+          h+='<div class="d-conn-list">';
           for(var j=0;j<dp.length;j++){
-            var dpl=palette(dp[j].layer);
+            var dpl2=palette(dp[j].layer);
             h+='<div class="d-conn-item">'+
-                 '<span class="d-conn-dot" style="background:'+esc(dpl.star)+';box-shadow:0 0 4px '+esc(dpl.star)+'66"></span>'+
-                 esc(dp[j].label)+'</div>';
+                 '<span class="d-conn-dot" style="background:'+esc(dpl2.star)+';box-shadow:0 0 3px '+esc(dpl2.star)+'55"></span>'+
+                 '<span style="min-width:0;overflow:hidden;text-overflow:ellipsis">'+esc(dp[j].label)+'</span>'+
+                 '<span class="d-conn-meta">'+fmt(dp[j].loc)+' loc</span>'+
+                 '</div>';
           }
-        }else{
-          h+='<div class="d-empty">No dependents</div>';
+          h+='</div>';
         }
-        h+='</div>';
+
+        if(!im.length&&!dp.length){
+          h+='<div class="d-empty">No connections</div>';
+        }
+
         ui.dbody.innerHTML=h;
         ui.detail.classList.add("open");
         ui.detail.setAttribute("aria-hidden","false");
