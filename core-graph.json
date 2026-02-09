@@ -1,0 +1,1487 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-02-09T04:52:34.994Z",
+  "analyzer_version": "0.1.0",
+  "snapshot": {
+    "schema_version": "1.0.0",
+    "total_files": 15,
+    "total_symbols": 34,
+    "total_edges": 19,
+    "total_loc": 354,
+    "languages": [
+      "typescript"
+    ],
+    "framework": null,
+    "layer_summary": [
+      {
+        "id": "layer:284eb15e",
+        "label": "Core",
+        "file_count": 3,
+        "symbol_count": 4
+      },
+      {
+        "id": "layer:66ddebfc",
+        "label": "Data",
+        "file_count": 7,
+        "symbol_count": 25
+      },
+      {
+        "id": "layer:06c6bb22",
+        "label": "Other",
+        "file_count": 5,
+        "symbol_count": 5
+      }
+    ],
+    "analysis_duration_ms": 47,
+    "analyzer_version": "0.1.0",
+    "trigger": "manual",
+    "analyzed_at": "2026-02-09T04:52:34.994Z"
+  },
+  "elements": {
+    "nodes": [
+      {
+        "data": {
+          "id": "symbol:f0164c36",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "EDGE_TYPE_LABELS",
+          "parent_id": "file:f4928f04",
+          "file_path": "constants/edge-types.ts",
+          "loc": 9,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 1,
+            "end_line": 9
+          },
+          "parent": "file:f4928f04"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:19f681c4",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "EDGE_STYLES",
+          "parent_id": "file:f4928f04",
+          "file_path": "constants/edge-types.ts",
+          "loc": 9,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 12,
+            "end_line": 20
+          },
+          "parent": "file:f4928f04"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:23023d55",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "DEFAULT_LAYER_RULES",
+          "parent_id": "file:1902d91d",
+          "file_path": "constants/layer-rules.ts",
+          "loc": 32,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 4,
+            "end_line": 35
+          },
+          "parent": "file:1902d91d"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:4606238a",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "NODE_TYPE_LABELS",
+          "parent_id": "file:973b48cd",
+          "file_path": "constants/node-types.ts",
+          "loc": 6,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 1,
+            "end_line": 6
+          },
+          "parent": "file:973b48cd"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:6402261e",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "NODE_SUBTYPE_LABELS",
+          "parent_id": "file:973b48cd",
+          "file_path": "constants/node-types.ts",
+          "loc": 18,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 8,
+            "end_line": 25
+          },
+          "parent": "file:973b48cd"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:6265f466",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "EdgeType",
+          "parent_id": "file:a4534371",
+          "file_path": "schemas/edge.ts",
+          "loc": 9,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 3,
+            "end_line": 11
+          },
+          "parent": "file:a4534371"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:4b744081",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "EdgeSchema",
+          "parent_id": "file:a4534371",
+          "file_path": "schemas/edge.ts",
+          "loc": 8,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 14,
+            "end_line": 21
+          },
+          "parent": "file:a4534371"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:b0ad1fd6",
+          "type": "symbol",
+          "subtype": "type-alias",
+          "label": "Edge",
+          "parent_id": "file:a4534371",
+          "file_path": "schemas/edge.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 23,
+            "end_line": 23
+          },
+          "parent": "file:a4534371"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:638cea64",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "CytoscapeEdgeSchema",
+          "parent_id": "file:a4534371",
+          "file_path": "schemas/edge.ts",
+          "loc": 10,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 25,
+            "end_line": 34
+          },
+          "parent": "file:a4534371"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:f5def811",
+          "type": "symbol",
+          "subtype": "type-alias",
+          "label": "CytoscapeEdge",
+          "parent_id": "file:a4534371",
+          "file_path": "schemas/edge.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 36,
+            "end_line": 36
+          },
+          "parent": "file:a4534371"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:3eb96be8",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "RekkonGraphSchema",
+          "parent_id": "file:0b40e363",
+          "file_path": "schemas/graph.ts",
+          "loc": 15,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 6,
+            "end_line": 20
+          },
+          "parent": "file:0b40e363"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:c499a83b",
+          "type": "symbol",
+          "subtype": "type-alias",
+          "label": "RekkonGraph",
+          "parent_id": "file:0b40e363",
+          "file_path": "schemas/graph.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 22,
+            "end_line": 22
+          },
+          "parent": "file:0b40e363"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:84837810",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "LanguageMetadataSchema",
+          "parent_id": "file:e7498f43",
+          "file_path": "schemas/metadata.ts",
+          "loc": 14,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 4,
+            "end_line": 17
+          },
+          "parent": "file:e7498f43"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:a1fb7326",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "FrameworkMetadataSchema",
+          "parent_id": "file:e7498f43",
+          "file_path": "schemas/metadata.ts",
+          "loc": 6,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 20,
+            "end_line": 25
+          },
+          "parent": "file:e7498f43"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:e2278427",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "GitMetadataSchema",
+          "parent_id": "file:e7498f43",
+          "file_path": "schemas/metadata.ts",
+          "loc": 6,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 28,
+            "end_line": 33
+          },
+          "parent": "file:e7498f43"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:8658d9fd",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "NodeMetadataSchema",
+          "parent_id": "file:e7498f43",
+          "file_path": "schemas/metadata.ts",
+          "loc": 3,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 36,
+            "end_line": 38
+          },
+          "parent": "file:e7498f43"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:694f270a",
+          "type": "symbol",
+          "subtype": "type-alias",
+          "label": "NodeMetadata",
+          "parent_id": "file:e7498f43",
+          "file_path": "schemas/metadata.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 40,
+            "end_line": 40
+          },
+          "parent": "file:e7498f43"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:6cbdc928",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "NodeType",
+          "parent_id": "file:22df4d99",
+          "file_path": "schemas/node.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 5,
+            "end_line": 5
+          },
+          "parent": "file:22df4d99"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:afb02b1a",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "NodeSubtype",
+          "parent_id": "file:22df4d99",
+          "file_path": "schemas/node.ts",
+          "loc": 20,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 8,
+            "end_line": 27
+          },
+          "parent": "file:22df4d99"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:7fcc32e4",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "NodeSchema",
+          "parent_id": "file:22df4d99",
+          "file_path": "schemas/node.ts",
+          "loc": 26,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 32,
+            "end_line": 57
+          },
+          "parent": "file:22df4d99"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:389ae833",
+          "type": "symbol",
+          "subtype": "type-alias",
+          "label": "Node",
+          "parent_id": "file:22df4d99",
+          "file_path": "schemas/node.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 59,
+            "end_line": 59
+          },
+          "parent": "file:22df4d99"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:59c3dc53",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "CytoscapeNodeSchema",
+          "parent_id": "file:22df4d99",
+          "file_path": "schemas/node.ts",
+          "loc": 5,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 64,
+            "end_line": 68
+          },
+          "parent": "file:22df4d99"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:a54e00e2",
+          "type": "symbol",
+          "subtype": "type-alias",
+          "label": "CytoscapeNode",
+          "parent_id": "file:22df4d99",
+          "file_path": "schemas/node.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 70,
+            "end_line": 70
+          },
+          "parent": "file:22df4d99"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:6e312d16",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "PrivacyTier",
+          "parent_id": "file:3a666e24",
+          "file_path": "schemas/project.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 3,
+            "end_line": 3
+          },
+          "parent": "file:3a666e24"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:248d43db",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "AnalysisStatus",
+          "parent_id": "file:3a666e24",
+          "file_path": "schemas/project.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 6,
+            "end_line": 6
+          },
+          "parent": "file:3a666e24"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:ced63493",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "ProjectSchema",
+          "parent_id": "file:3a666e24",
+          "file_path": "schemas/project.ts",
+          "loc": 26,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 9,
+            "end_line": 34
+          },
+          "parent": "file:3a666e24"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:9579e74f",
+          "type": "symbol",
+          "subtype": "type-alias",
+          "label": "Project",
+          "parent_id": "file:3a666e24",
+          "file_path": "schemas/project.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 36,
+            "end_line": 36
+          },
+          "parent": "file:3a666e24"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:d340b4d2",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "LayerSummarySchema",
+          "parent_id": "file:588d6568",
+          "file_path": "schemas/snapshot.ts",
+          "loc": 6,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 3,
+            "end_line": 8
+          },
+          "parent": "file:588d6568"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:7eec5e98",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "SnapshotSchema",
+          "parent_id": "file:588d6568",
+          "file_path": "schemas/snapshot.ts",
+          "loc": 32,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 10,
+            "end_line": 41
+          },
+          "parent": "file:588d6568"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:e2ca5973",
+          "type": "symbol",
+          "subtype": "type-alias",
+          "label": "Snapshot",
+          "parent_id": "file:588d6568",
+          "file_path": "schemas/snapshot.ts",
+          "loc": 1,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 43,
+            "end_line": 43
+          },
+          "parent": "file:588d6568"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:58105543",
+          "type": "symbol",
+          "subtype": "function",
+          "label": "generateNodeId",
+          "parent_id": "file:3e675cde",
+          "file_path": "utils/id.ts",
+          "loc": 5,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "return_type": "string",
+            "params": [
+              {
+                "name": "type"
+              },
+              {
+                "name": "...parts"
+              }
+            ],
+            "line": 14,
+            "end_line": 18
+          },
+          "parent": "file:3e675cde"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:23464baf",
+          "type": "symbol",
+          "subtype": "function",
+          "label": "generateEdgeId",
+          "parent_id": "file:3e675cde",
+          "file_path": "utils/id.ts",
+          "loc": 5,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "return_type": "string",
+            "params": [
+              {
+                "name": "sourceId"
+              },
+              {
+                "name": "targetId"
+              },
+              {
+                "name": "edgeType"
+              }
+            ],
+            "line": 23,
+            "end_line": 27
+          },
+          "parent": "file:3e675cde"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:bf13026d",
+          "type": "symbol",
+          "subtype": "function",
+          "label": "serializeGraph",
+          "parent_id": "file:5467e895",
+          "file_path": "utils/serializer.ts",
+          "loc": 10,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "return_type": "object",
+            "params": [
+              {
+                "name": "graph"
+              }
+            ],
+            "line": 11,
+            "end_line": 20
+          },
+          "parent": "file:5467e895"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:62b01f54",
+          "type": "symbol",
+          "subtype": "function",
+          "label": "sortNodesChildrenFirst",
+          "parent_id": "file:5467e895",
+          "file_path": "utils/serializer.ts",
+          "loc": 14,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "return_type": "CytoscapeNode[]",
+            "params": [
+              {
+                "name": "nodes"
+              }
+            ],
+            "line": 26,
+            "end_line": 39
+          },
+          "parent": "file:5467e895"
+        }
+      },
+      {
+        "data": {
+          "id": "file:f4928f04",
+          "type": "file",
+          "label": "edge-types.ts",
+          "parent_id": "module:f5669d28",
+          "file_path": "constants/edge-types.ts",
+          "loc": 19,
+          "complexity": 1,
+          "export_count": 2,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:f5669d28"
+        }
+      },
+      {
+        "data": {
+          "id": "file:df880aa2",
+          "type": "file",
+          "label": "index.ts",
+          "parent_id": "module:f5669d28",
+          "file_path": "constants/index.ts",
+          "loc": 3,
+          "complexity": 0,
+          "export_count": 0,
+          "import_count": 3,
+          "is_exported": false,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:f5669d28"
+        }
+      },
+      {
+        "data": {
+          "id": "file:1902d91d",
+          "type": "file",
+          "label": "layer-rules.ts",
+          "parent_id": "module:f5669d28",
+          "file_path": "constants/layer-rules.ts",
+          "loc": 33,
+          "complexity": 3,
+          "export_count": 1,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:f5669d28"
+        }
+      },
+      {
+        "data": {
+          "id": "file:973b48cd",
+          "type": "file",
+          "label": "node-types.ts",
+          "parent_id": "module:f5669d28",
+          "file_path": "constants/node-types.ts",
+          "loc": 24,
+          "complexity": 2,
+          "export_count": 2,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:f5669d28"
+        }
+      },
+      {
+        "data": {
+          "id": "file:908596c5",
+          "type": "file",
+          "label": "index.ts",
+          "parent_id": "module:e54855e1",
+          "file_path": "index.ts",
+          "loc": 3,
+          "complexity": 0,
+          "export_count": 0,
+          "import_count": 3,
+          "is_exported": false,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:e54855e1"
+        }
+      },
+      {
+        "data": {
+          "id": "file:a4534371",
+          "type": "file",
+          "label": "edge.ts",
+          "parent_id": "module:ff4b2759",
+          "file_path": "schemas/edge.ts",
+          "loc": 31,
+          "complexity": 5,
+          "export_count": 3,
+          "import_count": 1,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:ff4b2759"
+        }
+      },
+      {
+        "data": {
+          "id": "file:0b40e363",
+          "type": "file",
+          "label": "graph.ts",
+          "parent_id": "module:ff4b2759",
+          "file_path": "schemas/graph.ts",
+          "loc": 18,
+          "complexity": 1,
+          "export_count": 1,
+          "import_count": 4,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:ff4b2759"
+        }
+      },
+      {
+        "data": {
+          "id": "file:ae81fbf1",
+          "type": "file",
+          "label": "index.ts",
+          "parent_id": "module:ff4b2759",
+          "file_path": "schemas/index.ts",
+          "loc": 6,
+          "complexity": 0,
+          "export_count": 0,
+          "import_count": 6,
+          "is_exported": false,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:ff4b2759"
+        }
+      },
+      {
+        "data": {
+          "id": "file:e7498f43",
+          "type": "file",
+          "label": "metadata.ts",
+          "parent_id": "module:ff4b2759",
+          "file_path": "schemas/metadata.ts",
+          "loc": 35,
+          "complexity": 4,
+          "export_count": 4,
+          "import_count": 1,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:ff4b2759"
+        }
+      },
+      {
+        "data": {
+          "id": "file:22df4d99",
+          "type": "file",
+          "label": "node.ts",
+          "parent_id": "module:ff4b2759",
+          "file_path": "schemas/node.ts",
+          "loc": 57,
+          "complexity": 7,
+          "export_count": 4,
+          "import_count": 1,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:ff4b2759"
+        }
+      },
+      {
+        "data": {
+          "id": "file:3a666e24",
+          "type": "file",
+          "label": "project.ts",
+          "parent_id": "module:ff4b2759",
+          "file_path": "schemas/project.ts",
+          "loc": 27,
+          "complexity": 4,
+          "export_count": 3,
+          "import_count": 1,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:ff4b2759"
+        }
+      },
+      {
+        "data": {
+          "id": "file:588d6568",
+          "type": "file",
+          "label": "snapshot.ts",
+          "parent_id": "module:ff4b2759",
+          "file_path": "schemas/snapshot.ts",
+          "loc": 35,
+          "complexity": 4,
+          "export_count": 2,
+          "import_count": 1,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:ff4b2759"
+        }
+      },
+      {
+        "data": {
+          "id": "file:3e675cde",
+          "type": "file",
+          "subtype": "utility",
+          "label": "id.ts",
+          "parent_id": "module:a0b1a5bc",
+          "file_path": "utils/id.ts",
+          "loc": 25,
+          "complexity": 2,
+          "export_count": 2,
+          "import_count": 1,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:a0b1a5bc"
+        }
+      },
+      {
+        "data": {
+          "id": "file:f3c38416",
+          "type": "file",
+          "subtype": "utility",
+          "label": "index.ts",
+          "parent_id": "module:a0b1a5bc",
+          "file_path": "utils/index.ts",
+          "loc": 2,
+          "complexity": 0,
+          "export_count": 0,
+          "import_count": 2,
+          "is_exported": false,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:a0b1a5bc"
+        }
+      },
+      {
+        "data": {
+          "id": "file:5467e895",
+          "type": "file",
+          "subtype": "utility",
+          "label": "serializer.ts",
+          "parent_id": "module:a0b1a5bc",
+          "file_path": "utils/serializer.ts",
+          "loc": 36,
+          "complexity": 3,
+          "export_count": 1,
+          "import_count": 2,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript"
+          },
+          "parent": "module:a0b1a5bc"
+        }
+      },
+      {
+        "data": {
+          "id": "module:e54855e1",
+          "type": "module",
+          "label": "(root)",
+          "parent_id": "layer:06c6bb22",
+          "file_path": null,
+          "loc": 3,
+          "complexity": 0,
+          "export_count": 0,
+          "import_count": 3,
+          "is_exported": false,
+          "metadata": {
+            "file_count": 1
+          },
+          "parent": "layer:06c6bb22"
+        }
+      },
+      {
+        "data": {
+          "id": "module:f5669d28",
+          "type": "module",
+          "label": "constants",
+          "parent_id": "layer:06c6bb22",
+          "file_path": "constants",
+          "loc": 79,
+          "complexity": 8,
+          "export_count": 5,
+          "import_count": 3,
+          "is_exported": false,
+          "metadata": {
+            "file_count": 4
+          },
+          "parent": "layer:06c6bb22"
+        }
+      },
+      {
+        "data": {
+          "id": "module:ff4b2759",
+          "type": "module",
+          "label": "schemas",
+          "parent_id": "layer:66ddebfc",
+          "file_path": "schemas",
+          "loc": 209,
+          "complexity": 22,
+          "export_count": 17,
+          "import_count": 15,
+          "is_exported": false,
+          "metadata": {
+            "file_count": 7
+          },
+          "parent": "layer:66ddebfc"
+        }
+      },
+      {
+        "data": {
+          "id": "module:a0b1a5bc",
+          "type": "module",
+          "label": "utils",
+          "parent_id": "layer:284eb15e",
+          "file_path": "utils",
+          "loc": 63,
+          "complexity": 7,
+          "export_count": 3,
+          "import_count": 5,
+          "is_exported": false,
+          "metadata": {
+            "file_count": 3
+          },
+          "parent": "layer:284eb15e"
+        }
+      },
+      {
+        "data": {
+          "id": "layer:284eb15e",
+          "type": "layer",
+          "label": "Core",
+          "loc": 63,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "module_count": 1,
+            "file_count": 3
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "layer:66ddebfc",
+          "type": "layer",
+          "label": "Data",
+          "loc": 209,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "module_count": 1,
+            "file_count": 7
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "layer:06c6bb22",
+          "type": "layer",
+          "label": "Other",
+          "loc": 82,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "module_count": 2,
+            "file_count": 5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "edge:4fe10161",
+          "source": "file:0b40e363",
+          "target": "file:22df4d99",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./node.js",
+            "specifiers": [
+              "CytoscapeNodeSchema"
+            ],
+            "line": 2
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:b31d4709",
+          "source": "file:0b40e363",
+          "target": "file:588d6568",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./snapshot.js",
+            "specifiers": [
+              "SnapshotSchema"
+            ],
+            "line": 4
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:0d9f43d7",
+          "source": "file:0b40e363",
+          "target": "file:a4534371",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./edge.js",
+            "specifiers": [
+              "CytoscapeEdgeSchema"
+            ],
+            "line": 3
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:3d0bd025",
+          "source": "file:5467e895",
+          "target": "file:0b40e363",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "../schemas/graph.js",
+            "specifiers": [
+              "RekkonGraph"
+            ],
+            "line": 1
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:4ddb9fcb",
+          "source": "file:5467e895",
+          "target": "file:22df4d99",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "../schemas/node.js",
+            "specifiers": [
+              "CytoscapeNode"
+            ],
+            "line": 2
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:00abbde9",
+          "source": "file:908596c5",
+          "target": "file:ae81fbf1",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./schemas/index.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 1
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:52ff229f",
+          "source": "file:908596c5",
+          "target": "file:df880aa2",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./constants/index.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 2
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:ed7a66b7",
+          "source": "file:908596c5",
+          "target": "file:f3c38416",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./utils/index.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 3
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:d8a56327",
+          "source": "file:ae81fbf1",
+          "target": "file:0b40e363",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./graph.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 5
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:de6ab37a",
+          "source": "file:ae81fbf1",
+          "target": "file:22df4d99",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./node.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 1
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:8823b367",
+          "source": "file:ae81fbf1",
+          "target": "file:3a666e24",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./project.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 4
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:19723d6f",
+          "source": "file:ae81fbf1",
+          "target": "file:588d6568",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./snapshot.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 3
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:2d2fa227",
+          "source": "file:ae81fbf1",
+          "target": "file:a4534371",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./edge.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 2
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:72376bec",
+          "source": "file:ae81fbf1",
+          "target": "file:e7498f43",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./metadata.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 6
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:55fd603f",
+          "source": "file:df880aa2",
+          "target": "file:1902d91d",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./layer-rules.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 3
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:6d5338a7",
+          "source": "file:df880aa2",
+          "target": "file:973b48cd",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./node-types.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 1
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:f4efb0e6",
+          "source": "file:df880aa2",
+          "target": "file:f4928f04",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./edge-types.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 2
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:e420fb68",
+          "source": "file:f3c38416",
+          "target": "file:3e675cde",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./id.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 1
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "edge:6fba5188",
+          "source": "file:f3c38416",
+          "target": "file:5467e895",
+          "type": "imports",
+          "weight": 1,
+          "metadata": {
+            "source": "./serializer.js",
+            "specifiers": [
+              "*"
+            ],
+            "line": 2
+          }
+        }
+      }
+    ]
+  }
+}

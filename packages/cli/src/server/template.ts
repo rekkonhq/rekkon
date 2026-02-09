@@ -435,17 +435,17 @@ export function getHtmlTemplate(): string {
       var LAYOUT_OPTIONS = {
         name: "cose",
         animate: false,
-        fit: true,
+        fit: false,
         padding: 50,
-        nodeDimensionsIncludeLabels: true,
-        nodeRepulsion: function() { return 65536; },
-        idealEdgeLength: function() { return 120; },
+        nodeDimensionsIncludeLabels: false,
+        nodeRepulsion: function() { return 32768; },
+        idealEdgeLength: function() { return 80; },
         edgeElasticity: function() { return 0.1; },
-        gravity: 0.6,
-        numIter: 2000,
-        nestPadding: 25,
-        componentSpacing: 80,
-        randomize: true
+        gravity: 0.8,
+        numIter: 2500,
+        nestPadding: 20,
+        componentSpacing: 60,
+        randomize: false
       };
 
       init();
@@ -597,7 +597,6 @@ export function getHtmlTemplate(): string {
           style: getStylesheet(),
           minZoom: 0.03,
           maxZoom: 5,
-          wheelSensitivity: 0.16,
           selectionType: "single"
         });
 
@@ -610,7 +609,7 @@ export function getHtmlTemplate(): string {
             selector: "node",
             style: {
               "label": "data(label)",
-              "font-family": "'IBM Plex Sans', 'Inter', 'Segoe UI', system-ui, sans-serif",
+              "font-family": "IBM Plex Sans, Inter, Segoe UI, system-ui, sans-serif",
               "font-size": "10px",
               "color": "#e2e8f0",
               "text-outline-color": "#020617",
@@ -625,19 +624,19 @@ export function getHtmlTemplate(): string {
             selector: "node[type='layer']",
             style: {
               "background-color": "data(bgColor)",
-              "background-opacity": 0.85,
+              "background-opacity": 0.15,
               "border-color": "data(borderColor)",
               "border-width": 2.5,
               "border-opacity": 0.9,
               "shape": "roundrectangle",
               "label": "data(label)",
-              "font-size": "18px",
+              "font-size": "13px",
               "font-weight": "bold",
               "color": "data(borderColor)",
               "text-valign": "top",
               "text-halign": "center",
               "text-margin-y": 10,
-              "padding": "35px",
+              "padding": "12px",
               "text-outline-color": "#020617",
               "text-outline-width": 3
             }
@@ -646,19 +645,19 @@ export function getHtmlTemplate(): string {
             selector: "node[type='module']",
             style: {
               "background-color": "data(bgColor)",
-              "background-opacity": 0.5,
+              "background-opacity": 0.08,
               "border-color": "data(borderColor)",
               "border-width": 1.5,
               "border-opacity": 0.6,
               "shape": "roundrectangle",
               "label": "data(label)",
-              "font-size": "11px",
+              "font-size": "9px",
               "font-weight": "600",
               "color": "data(borderColor)",
               "text-valign": "top",
               "text-halign": "center",
               "text-margin-y": 8,
-              "padding": "20px",
+              "padding": "8px",
               "text-outline-color": "#020617",
               "text-outline-width": 2
             }
@@ -670,8 +669,8 @@ export function getHtmlTemplate(): string {
               "background-opacity": 0.9,
               "border-color": "data(borderColor)",
               "border-width": 1,
-              "width": 28,
-              "height": 28,
+              "width": 18,
+              "height": 18,
               "shape": "roundrectangle",
               "label": "data(label)",
               "font-size": "8px",
@@ -749,6 +748,15 @@ export function getHtmlTemplate(): string {
           {
             selector: ":parent",
             style: { "background-clip": "none" }
+          },
+          {
+            selector: ":parent",
+            style: {
+              "background-clip": "none",
+              "border-opacity": 0.7,
+              "shadow-blur": 0,
+              "shadow-opacity": 0
+            }
           }
         ];
       }
@@ -1057,8 +1065,53 @@ export function getHtmlTemplate(): string {
         }
 
         var visible = state.cy.elements(":visible");
-        var eles = visible.length ? visible : state.cy.elements();
-        state.cy.layout(Object.assign({}, LAYOUT_OPTIONS, { eles: eles })).run();
+        if (!visible.length) {
+          return;
+        }
+
+        var opts = Object.assign({}, LAYOUT_OPTIONS);
+        opts.stop = function() {
+          normalizePositions();
+          state.cy.fit(state.cy.elements(":visible"), 50);
+        };
+
+        visible.layout(opts).run();
+      }
+
+      function normalizePositions() {
+        var cy = state.cy;
+        if (!cy) {
+          return;
+        }
+
+        var leaves = cy.nodes(":visible").filter(function(node) {
+          return !node.isParent();
+        });
+        if (!leaves.length) {
+          return;
+        }
+
+        var bb = cy.elements(":visible").boundingBox();
+        if (!bb.w || !bb.h) {
+          return;
+        }
+
+        var targetW = 3000;
+        var targetH = 2000;
+        var scaleX = targetW / bb.w;
+        var scaleY = targetH / bb.h;
+        var scale = Math.min(scaleX, scaleY);
+
+        var centerX = bb.x1 + bb.w / 2;
+        var centerY = bb.y1 + bb.h / 2;
+
+        leaves.forEach(function(node) {
+          var pos = node.position();
+          node.position({
+            x: (pos.x - centerX) * scale,
+            y: (pos.y - centerY) * scale
+          });
+        });
       }
 
       function fitGraph() {
