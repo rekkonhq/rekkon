@@ -7,7 +7,7 @@ export function getModulePath(relativeFilePath: string, moduleDepth: number): st
     return '';
   }
 
-  const segments = directory.split('/').filter((segment) => segment.length > 0);
+  const segments = toModuleSegments(directory);
   const depth = sanitizeDepth(moduleDepth);
   if (depth === 0) {
     return '';
@@ -32,6 +32,25 @@ function sanitizeDepth(moduleDepth: number): number {
   }
 
   return Math.max(0, Math.floor(moduleDepth));
+}
+
+function toModuleSegments(directoryPath: string): string[] {
+  const segments = directoryPath.split('/').filter((segment) => segment.length > 0);
+  if (segments.length === 0) {
+    return [];
+  }
+
+  // Monorepo-friendly grouping:
+  // packages/<pkg>/src/<feature>/file.ts => <pkg>/<feature>
+  if (segments.length >= 2 && segments[0] === 'packages') {
+    if (segments[2] === 'src') {
+      return [segments[1], ...segments.slice(3)];
+    }
+
+    return [segments[1], ...segments.slice(2)];
+  }
+
+  return segments;
 }
 
 function normalizePath(value: string): string {

@@ -39,45 +39,24 @@ export function buildGraph(options: BuildGraphOptions): RekkonGraph {
   const layerNodesById = new Map<string, CytoscapeNode>();
   const moduleNodesByPath = new Map<string, CytoscapeNode>();
   const fileNodesByPath = new Map<string, CytoscapeNode>();
+  const fileLayersByPath = new Map<string, string>();
+  const moduleFilesByPath = new Map<string, ParsedFile[]>();
   const symbolNodes: CytoscapeNode[] = [];
   const seenSymbolIds = new Set<string>();
 
   for (const file of files) {
     const layerLabel = classifyFileToLayer(file.relativePath);
-    const layerId = generateNodeId('layer', root, layerLabel);
-    if (!layerNodesById.has(layerId)) {
-      layerNodesById.set(layerId, {
-        data: {
-          id: layerId,
-          type: 'layer',
-          label: layerLabel,
-          export_count: 0,
-          import_count: 0,
-          is_exported: false,
-          metadata: {},
-        },
-      });
+    const modulePath = getModulePath(file.relativePath, options.moduleDepth);
+    fileLayersByPath.set(file.relativePath, layerLabel);
+    const existingModuleFiles = moduleFilesByPath.get(modulePath);
+    if (existingModuleFiles) {
+      existingModuleFiles.push(file);
+    } else {
+      moduleFilesByPath.set(modulePath, [file]);
     }
 
-    const modulePath = getModulePath(file.relativePath, options.moduleDepth);
     const moduleKey = modulePath || '(root)';
     const moduleId = generateNodeId('module', root, moduleKey);
-    if (!moduleNodesByPath.has(modulePath)) {
-      moduleNodesByPath.set(modulePath, {
-        data: {
-          id: moduleId,
-          type: 'module',
-          label: getModuleLabel(modulePath),
-          parent: layerId,
-          parent_id: layerId,
-          file_path: modulePath || null,
-          export_count: 0,
-          import_count: 0,
-          is_exported: false,
-          metadata: {},
-        },
-      });
-    }
 
     const fileId = generateNodeId('file', root, file.relativePath);
     const fileSubtype = classifyFileSubtype(file.relativePath, file.hasDefaultExport);
@@ -151,13 +130,52 @@ export function buildGraph(options: BuildGraphOptions): RekkonGraph {
     }
   }
 
-  const layerNodes = [...layerNodesById.values()].sort(compareLayerNodes);
-  const moduleNodes = [...moduleNodesByPath.values()].sort(compareModuleNodes);
+  const sortedModuleEntries = [...moduleFilesByPath.entries()].sort(([a], [b]) => a.localeCompare(b));
+  for (const [modulePath, moduleFiles] of sortedModuleEntries) {
+    const moduleLayerLabel = selectDominantLayer(moduleFiles, fileLayersByPath);
+    const layerId = generateNodeId('layer', root, moduleLayerLabel);
+    if (!layerNodesById.has(layerId)) {
+      layerNodesById.set(layerId, {
+        data: {
+          id: layerId,
+          type: 'layer',
+          label: moduleLayerLabel,
+          export_count: 0,
+          import_count: 0,
+          is_exported: false,
+          metadata: {},
+        },
+      });
+    }
+
+    const moduleKey = modulePath || '(root)';
+    const moduleId = generateNodeId('module', root, moduleKey);
+    moduleNodesByPath.set(modulePath, {
+      data: {
+        id: moduleId,
+        type: 'module',
+        label: getModuleLabel(modulePath),
+        parent: layerId,
+        parent_id: layerId,
+        file_path: modulePath || null,
+        export_count: 0,
+        import_count: 0,
+        is_exported: false,
+        metadata: {},
+      },
+    });
+  }
+
+  let layerNodes = [...layerNodesById.values()].sort(compareLayerNodes);
+  let moduleNodes = [...moduleNodesByPath.values()].sort(compareModuleNodes);
   const fileNodes = [...fileNodesByPath.values()].sort(compareFileNodes);
   symbolNodes.sort(compareSymbolNodes);
 
   applyModuleMetrics(moduleNodes, fileNodes);
   applyLayerMetrics(layerNodes, moduleNodes, fileNodes);
+  const pruned = pruneEmptyLayers(layerNodes, moduleNodes, fileNodes);
+  layerNodes = pruned.layerNodes;
+  moduleNodes = pruned.moduleNodes;
 
   const edges = buildImportEdges(files, fileNodesByPath);
   const totalLoc = fileNodes.reduce((sum, node) => sum + (node.data.loc ?? 0), 0);
@@ -251,6 +269,86 @@ function buildImportEdges(
   return [...edgesById.values()].sort(compareEdges);
 }
 
+function selectDominantLayer(moduleFiles: ParsedFile[], fileLayersByPath: Map<string, string>): string {
+  if (moduleFiles.length === 0) {
+    return 'Other';
+  }
+
+  const countsByLayer = new Map<string, number>();
+  for (const file of moduleFiles) {
+    const layer = fileLayersByPath.get(file.relativePath) ?? 'Other';
+    countsByLayer.set(layer, (countsByLayer.get(layer) ?? 0) + 1);
+  }
+
+  let selected = 'Other';
+  let selectedCount = -1;
+  for (const [layer, count] of countsByLayer) {
+    if (
+      count > selectedCount ||
+      (count === selectedCount && compareLayerPreference(layer, selected) < 0)
+    ) {
+      selected = layer;
+      selectedCount = count;
+    }
+  }
+
+  return selected;
+}
+
+function compareLayerPreference(a: string, b: string): number {
+  if (a === b) {
+    return 0;
+  }
+  if (a === 'Other') {
+    return 1;
+  }
+  if (b === 'Other') {
+    return -1;
+  }
+  return a.localeCompare(b);
+}
+
+function pruneEmptyLayers(
+  layerNodes: CytoscapeNode[],
+  moduleNodes: CytoscapeNode[],
+  fileNodes: CytoscapeNode[],
+): { layerNodes: CytoscapeNode[]; moduleNodes: CytoscapeNode[] } {
+  const layerByModuleId = new Map<string, string>();
+  for (const moduleNode of moduleNodes) {
+    const layerId = moduleNode.data.parent_id;
+    if (!layerId) {
+      continue;
+    }
+    layerByModuleId.set(moduleNode.data.id, layerId);
+  }
+
+  const fileCountsByLayerId = new Map<string, number>();
+  for (const fileNode of fileNodes) {
+    const moduleId = fileNode.data.parent_id;
+    if (!moduleId) {
+      continue;
+    }
+    const layerId = layerByModuleId.get(moduleId);
+    if (!layerId) {
+      continue;
+    }
+    fileCountsByLayerId.set(layerId, (fileCountsByLayerId.get(layerId) ?? 0) + 1);
+  }
+
+  const activeLayerIds = new Set(
+    layerNodes
+      .map((layerNode) => layerNode.data.id)
+      .filter((layerId) => (fileCountsByLayerId.get(layerId) ?? 0) > 0),
+  );
+
+  return {
+    layerNodes: layerNodes.filter((layerNode) => activeLayerIds.has(layerNode.data.id)),
+    moduleNodes: moduleNodes.filter((moduleNode) =>
+      activeLayerIds.has(moduleNode.data.parent_id ?? ''),
+    ),
+  };
+}
+
 function applyModuleMetrics(moduleNodes: CytoscapeNode[], fileNodes: CytoscapeNode[]): void {
   for (const moduleNode of moduleNodes) {
     const childFiles = fileNodes.filter((fileNode) => fileNode.data.parent_id === moduleNode.data.id);
@@ -301,20 +399,22 @@ function buildLayerSummary(
   fileNodes: CytoscapeNode[],
   symbolNodes: CytoscapeNode[],
 ): Array<{ id: string; label: string; file_count: number; symbol_count: number }> {
-  const summary = layerNodes.map((layerNode) => {
-    const layerModules = moduleNodes.filter((moduleNode) => moduleNode.data.parent_id === layerNode.data.id);
-    const moduleIds = new Set(layerModules.map((moduleNode) => moduleNode.data.id));
-    const layerFiles = fileNodes.filter((fileNode) => moduleIds.has(fileNode.data.parent_id ?? ''));
-    const fileIds = new Set(layerFiles.map((fileNode) => fileNode.data.id));
-    const layerSymbols = symbolNodes.filter((symbolNode) => fileIds.has(symbolNode.data.parent_id ?? ''));
+  const summary = layerNodes
+    .map((layerNode) => {
+      const layerModules = moduleNodes.filter((moduleNode) => moduleNode.data.parent_id === layerNode.data.id);
+      const moduleIds = new Set(layerModules.map((moduleNode) => moduleNode.data.id));
+      const layerFiles = fileNodes.filter((fileNode) => moduleIds.has(fileNode.data.parent_id ?? ''));
+      const fileIds = new Set(layerFiles.map((fileNode) => fileNode.data.id));
+      const layerSymbols = symbolNodes.filter((symbolNode) => fileIds.has(symbolNode.data.parent_id ?? ''));
 
-    return {
-      id: layerNode.data.id,
-      label: layerNode.data.label,
-      file_count: layerFiles.length,
-      symbol_count: layerSymbols.length,
-    };
-  });
+      return {
+        id: layerNode.data.id,
+        label: layerNode.data.label,
+        file_count: layerFiles.length,
+        symbol_count: layerSymbols.length,
+      };
+    })
+    .filter((entry) => entry.file_count > 0);
 
   return summary.sort((a, b) => a.label.localeCompare(b.label) || a.id.localeCompare(b.id));
 }
