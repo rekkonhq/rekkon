@@ -294,13 +294,13 @@ export function getHtmlTemplate(): string {
       var s={
         files:[],edges:[],mods:[],byId:Object.create(null),counts:Object.create(null),visible:Object.create(null),
         edgeCount:Object.create(null),edgesOn:true,hover:null,sel:null,dust:[],noiseCache:null,maxLoc:1,totalLoc:0,
-        insights:[],insightIdx:0,insightFade:1,insightLastSwitch:0,
-        heroId:null,heroSeen:false,intro:{phase:0,start:0,done:false},introPlayed:false,
-        v:{scale:1,ox:0,oy:0},p:{down:false,drag:false,dx:0,dy:0,lx:0,ly:0},queued:false
+        insights:[],insightIdx:0,insightFade:1,insightFading:false,insightDir:0,insightAnimStart:0,insightTimer:0,
+        heroId:null,heroFile:null,heroSeen:false,intro:{phase:0,start:0,done:false},introPlayed:false,
+        v:{scale:1,ox:0,oy:0},p:{down:false,drag:false,dx:0,dy:0,lx:0,ly:0},
+        rafId:0,needsRedraw:false,twinkleActive:false
       };
       bind();
-      setInterval(function(){drawReq();},80);
-      resize();setLoading(true,"Loading graph...");fetchGraph();live();
+      resize();drawReq();setLoading(true,"Loading graph...");fetchGraph();live();
 
       function bind(){
         window.addEventListener("resize",function(){resize();drawReq();});
@@ -395,10 +395,14 @@ export function getHtmlTemplate(): string {
         s.counts=counts;
         s.edgeCount=edgeCount;
         s.heroId=heroId;
+        s.heroFile=heroId&&byId[heroId]?byId[heroId]:null;
         s.insights=computeInsights();
         s.insightIdx=0;
-        s.insightFade=0;
-        s.insightLastSwitch=Date.now();
+        s.insightFade=1;
+        s.insightFading=false;
+        s.insightDir=0;
+        s.insightAnimStart=0;
+        resetInsightCycle();
         s.hover=null;
         tipHide();
       }
@@ -540,7 +544,7 @@ export function getHtmlTemplate(): string {
 
       function dust(w,h){
         var count=Math.max(1500,Math.floor((w*h)/800));
-        s.dust=[];var seed=173;
+        s.dust=[];var seed=173,hasTwinkle=false;
         function rng(){seed=(seed*9301+49297)%233280;return seed/233280;}
         for(var i=0;i<count;i++){
           var rx=rng(),ry=rng();
@@ -562,9 +566,11 @@ export function getHtmlTemplate(): string {
           else if(rc<.85)temp=1;
           else temp=2;
           twinkle=rs>.92?(.3+rng()*.7):0;
+          if(twinkle>0)hasTwinkle=true;
           twinklePhase=rng()*Math.PI*2;
           s.dust.push({x:rx*w,y:ry*h,a:brightness,s:size,temp:temp,twinkle:twinkle,twinklePhase:twinklePhase});
         }
+        s.twinkleActive=hasTwinkle;
       }
 
       function fit(){
@@ -575,16 +581,29 @@ export function getHtmlTemplate(): string {
       }
 
       function zoom(x,y,f){var p=s.v.scale,n=clamp(p*f,MIN,MAX);if(n===p)return;var wx=(x-s.v.ox)/p,wy=(y-s.v.oy)/p;s.v.scale=n;s.v.ox=x-wx*n;s.v.oy=y-wy*n;drawReq();}
-      function drawReq(){if(s.queued)return;s.queued=true;requestAnimationFrame(function(){s.queued=false;draw();});}
+      function scheduleRedraw(){
+        if(s.rafId)return;
+        s.rafId=requestAnimationFrame(function(){
+          s.rafId=0;
+          if(!s.needsRedraw)return;
+          s.needsRedraw=false;
+          draw();
+        });
+      }
+      function drawReq(){s.needsRedraw=true;scheduleRedraw();}
 
       function draw(){
         var w=ui.c.clientWidth,h=ui.c.clientHeight;
         if(w<=0||h<=0)return;
+        var now=Date.now();
+        var intro=introState(now);
+        var twinkleAnimating=isTwinkleAnimating(intro);
+        updateInsightFade(now);
         ctx.clearRect(0,0,w,h);
-        bg(w,h);
-        var intro=introState();
+        bg(w,h,now,twinkleAnimating);
         var vf=visibleFiles(),vis=Object.create(null);
         for(var i=0;i<vf.length;i++)vis[vf[i].id]=true;
+        var heroPulseOn=heroPulseActive(intro,vis);
         var fz=intro.done?focus():{id:null,link:Object.create(null)};
         if(intro.nebulaAlpha>0)nebula(vis,intro);
         if(intro.lineAlpha>0){
@@ -592,17 +611,18 @@ export function getHtmlTemplate(): string {
           if(s.edgesOn)drawEdges(vis,fz,intro.lineAlpha);
         }
         if(intro.starProgress>0){
-          stars(vf,fz,intro);
+          stars(vf,fz,intro,now,heroPulseOn);
           labels(vf,fz,intro);
         }
-        drawHeroHint(intro);
+        drawHeroHint(intro,now,heroPulseOn);
         drawInsightsBar();
         drawWordmark();
+        if((s.intro&&!s.intro.done)||s.insightFading||heroPulseOn||twinkleAnimating)drawReq();
       }
 
-      function introState(){
+      function introState(now){
         var intro=s.intro||{phase:4,start:0,done:true};
-        var elapsed=intro.done?1500:Math.max(0,Date.now()-intro.start);
+        var elapsed=intro.done?1500:Math.max(0,now-intro.start);
         var phase=intro.done?4:intro.phase||1;
         if(!intro.done){
           if(elapsed>=1500){
@@ -626,26 +646,62 @@ export function getHtmlTemplate(): string {
         };
       }
 
-      function updateInsightCycle(){
-        if(!s.insights||!s.insights.length){s.insightFade=1;return;}
-        var now=Date.now();
-        var timeSinceSwitch=now-s.insightLastSwitch;
-        if(timeSinceSwitch>5000){
-          s.insightFade=Math.max(0,1-(timeSinceSwitch-5000)/300);
-          if(s.insightFade<=0){
+      function resetInsightCycle(){
+        if(s.insightTimer){
+          clearTimeout(s.insightTimer);
+          s.insightTimer=0;
+        }
+        s.insightFade=1;
+        s.insightFading=false;
+        s.insightDir=0;
+        s.insightAnimStart=0;
+        if(s.insights&&s.insights.length>1)scheduleInsightCycle(5000);
+      }
+
+      function scheduleInsightCycle(delay){
+        if(s.insightTimer){
+          clearTimeout(s.insightTimer);
+          s.insightTimer=0;
+        }
+        if(!s.insights||s.insights.length<=1)return;
+        s.insightTimer=window.setTimeout(function(){
+          s.insightTimer=0;
+          startInsightFade();
+        },delay);
+      }
+
+      function startInsightFade(){
+        if(!s.insights||s.insights.length<=1)return;
+        if(s.insightFading)return;
+        s.insightFading=true;
+        s.insightDir=-1;
+        s.insightAnimStart=Date.now();
+        scheduleInsightCycle(5000);
+        drawReq();
+      }
+
+      function updateInsightFade(now){
+        if(!s.insightFading)return;
+        var elapsed=now-s.insightAnimStart;
+        if(s.insightDir<0){
+          s.insightFade=clamp(1-elapsed/300,0,1);
+          if(elapsed>=300){
             s.insightIdx=(s.insightIdx+1)%s.insights.length;
-            s.insightLastSwitch=now;
+            s.insightDir=1;
+            s.insightAnimStart=now;
             s.insightFade=0;
           }
-        }else if(timeSinceSwitch<300){
-          s.insightFade=timeSinceSwitch/300;
-        }else{
+          return;
+        }
+        s.insightFade=clamp(elapsed/300,0,1);
+        if(elapsed>=300){
           s.insightFade=1;
+          s.insightFading=false;
+          s.insightDir=0;
         }
       }
 
       function drawInsightsBar(){
-        updateInsightCycle();
         var dpr=window.devicePixelRatio||1;
         ctx.save();
         ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -689,14 +745,21 @@ export function getHtmlTemplate(): string {
         return x>=box.x&&x<=box.x+box.w&&y>=box.y&&y<=box.y+box.h;
       }
 
-      function drawHeroHint(intro){
-        if(!intro.done||!s.heroId||s.heroSeen)return;
-        var hero=s.byId[s.heroId];
-        if(!hero||!layerOn(hero.layer)||!starVisible(hero,intro))return;
+      function heroPulseActive(intro,vis){
+        var hero=s.heroFile;
+        if(!intro||!intro.done||!hero||s.heroSeen)return false;
+        if(!layerOn(hero.layer)||!starVisible(hero,intro))return false;
+        if(vis&&!vis[hero.id])return false;
+        return true;
+      }
+
+      function drawHeroHint(intro,now,heroPulseOn){
+        if(!heroPulseOn)return;
+        var hero=s.heroFile;
         var hp=toScreen(hero.x,hero.y);
         var hr=hero._r||radius(hero);
         var hintY=hp.y+hr+24;
-        var hintAlpha=0.5+Math.sin(Date.now()*0.002)*0.15;
+        var hintAlpha=0.5+Math.sin(now*0.002)*0.15;
         ctx.save();
         ctx.font='300 10px "IBM Plex Sans", system-ui, sans-serif';
         ctx.fillStyle="rgba(180,200,230,"+clamp(hintAlpha,0,1).toFixed(2)+")";
@@ -706,7 +769,11 @@ export function getHtmlTemplate(): string {
         ctx.restore();
       }
 
-      function bg(w,h){
+      function isTwinkleAnimating(intro){
+        return Boolean(s.twinkleActive&&intro&&!intro.done);
+      }
+
+      function bg(w,h,now,twinkleAnimating){
         var g=ctx.createRadialGradient(w*.3,h*.25,0,w*.5,h*.5,Math.max(w,h)*.95);
         g.addColorStop(0,"#050a18");
         g.addColorStop(.4,"#040810");
@@ -764,10 +831,10 @@ export function getHtmlTemplate(): string {
         ctx.fillStyle=mwGrad;
         ctx.fillRect(0,0,w,h);
         ctx.restore();
-        var time=Date.now()*.001;
+        var time=now*.001;
         for(var i=0;i<s.dust.length;i++){
           var d=s.dust[i],alpha=d.a,color;
-          if(d.twinkle>0){
+          if(twinkleAnimating&&d.twinkle>0){
             var twinkleAlpha=.5+.5*Math.sin(time*d.twinkle+d.twinklePhase);
             alpha=d.a*(.4+.6*twinkleAlpha);
           }
@@ -855,12 +922,12 @@ export function getHtmlTemplate(): string {
             var labelAlpha=clamp(.4+n*.05,.4,.75)*labelFade,fontSize=clamp(11+Math.sqrt(n)*1.5,11,16);
             ctx.font='500 '+fontSize+'px "IBM Plex Sans", "Segoe UI", system-ui, sans-serif';
             ctx.fillStyle=rgba(pl.star,labelAlpha);
+            ctx.strokeStyle="rgba(2,4,8,"+clamp(labelAlpha*0.65,0,1).toFixed(2)+")";
+            ctx.lineWidth=3;
+            ctx.lineJoin="round";
+            ctx.miterLimit=2;
             ctx.textAlign="center";
             ctx.textBaseline="middle";
-            ctx.shadowColor="rgba(0,0,0,0.7)";
-            ctx.shadowBlur=8;
-            ctx.shadowOffsetX=0;
-            ctx.shadowOffsetY=1;
             var label=titleCase(String(m.label).replace(/\\//g," / ")),spacing=2.5,totalWidth=0,charWidths=[];
             for(var ci=0;ci<label.length;ci++){
               var cw=ctx.measureText(label[ci]).width;
@@ -869,13 +936,11 @@ export function getHtmlTemplate(): string {
             }
             var startX=p.x-totalWidth/2;
             for(var cj=0;cj<label.length;cj++){
-              ctx.fillText(label[cj],startX+charWidths[cj]/2,labelY);
+              var charX=startX+charWidths[cj]/2;
+              ctx.strokeText(label[cj],charX,labelY);
+              ctx.fillText(label[cj],charX,labelY);
               startX+=charWidths[cj]+spacing;
             }
-            ctx.shadowColor="transparent";
-            ctx.shadowBlur=0;
-            ctx.shadowOffsetX=0;
-            ctx.shadowOffsetY=0;
             if(n>1){
               var anchorStartY=labelY+fontSize*0.6;
               var anchorEndY=p.y-ry*0.3;
@@ -1031,7 +1096,10 @@ export function getHtmlTemplate(): string {
         ctx.restore();
       }
 
-      function stars(vf,fz,intro){
+      function stars(vf,fz,intro,now,heroPulseOn){
+        var hoverPulseTime=now*0.003;
+        var heroPulseTime=now*0.002;
+        var heroId=heroPulseOn&&s.heroFile?s.heroFile.id:null;
         for(var i=0;i<vf.length;i++){
           var f=vf[i];
           if(!starVisible(f,intro))continue;
@@ -1064,17 +1132,16 @@ export function getHtmlTemplate(): string {
           ctx.fill();
           if(r>3.5)drawSpikes(p.x,p.y,r,starColor,isHot,alpha);
           if(isHot&&s.hover===f.id){
-            var pulseTime=Date.now()*.003,pulseR=r*(2+Math.sin(pulseTime)*.5),pulseAlpha=.15+Math.sin(pulseTime)*.05;
+            var pulseR=r*(2+Math.sin(hoverPulseTime)*.5),pulseAlpha=.15+Math.sin(hoverPulseTime)*.05;
             ctx.strokeStyle=rgba(starColor,pulseAlpha);
             ctx.lineWidth=.5;
             ctx.beginPath();
             ctx.arc(p.x,p.y,pulseR,0,Math.PI*2);
             ctx.stroke();
           }
-          if(s.heroId===f.id&&!s.heroSeen&&intro&&intro.done){
-            var heroTime=Date.now()*0.002;
-            var heroR=r*(3+Math.sin(heroTime)*1);
-            var heroAlpha=0.08+Math.sin(heroTime)*0.04;
+          if(heroId&&heroId===f.id){
+            var heroR=r*(3+Math.sin(heroPulseTime)*1);
+            var heroAlpha=0.08+Math.sin(heroPulseTime)*0.04;
             ctx.strokeStyle=rgba(pl.star,heroAlpha);
             ctx.lineWidth=1;
             ctx.beginPath();
