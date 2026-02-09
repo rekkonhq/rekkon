@@ -1,28 +1,3 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const fcoseBundle = loadFcoseBundle();
-
-function loadFcoseBundle(): string {
-  const candidates = [
-    join(__dirname, 'fcose-bundle.js'),
-    join(__dirname, '../../../src/server/fcose-bundle.js'),
-  ];
-
-  for (const candidate of candidates) {
-    if (!existsSync(candidate)) {
-      continue;
-    }
-
-    const source = readFileSync(candidate, 'utf-8');
-    return source.replace(/<\/script/gi, '<\\/script');
-  }
-
-  return '';
-}
-
 export function getHtmlTemplate(): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -86,7 +61,7 @@ export function getHtmlTemplate(): string {
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.4/cytoscape.min.js"></script>
-  <script>${fcoseBundle}</script>
+  <script src="https://unpkg.com/cytoscape-cose-bilkent@4.1.0/cytoscape-cose-bilkent.js"></script>
   <script>
     (function() {
       var ui = {
@@ -110,7 +85,7 @@ export function getHtmlTemplate(): string {
         symbols: false,
         hidden: new Set(),
         layersOpen: false,
-        fcoseReady: false
+        bilkentReady: false
       };
 
       if (!window.cytoscape) {
@@ -118,7 +93,7 @@ export function getHtmlTemplate(): string {
         return;
       }
 
-      state.fcoseReady = registerFcose();
+      state.bilkentReady = registerCoseBilkent();
 
       var LAYER_COLORS = {
         Core: { bg: "#1a2332", border: "#22c55e" },
@@ -149,27 +124,17 @@ export function getHtmlTemplate(): string {
       };
 
       var LAYOUT_OPTIONS = {
-        name: "fcose",
+        name: "cose-bilkent",
         quality: "default",
         animate: false,
         fit: true,
         padding: 40,
         nodeDimensionsIncludeLabels: true,
-        uniformNodeDimensions: false,
-        packComponents: true,
-        nodeRepulsion: function(node) {
-          return node.isParent() ? 12000 : 4500;
-        },
-        idealEdgeLength: function() {
-          return 80;
-        },
-        edgeElasticity: function() {
-          return 0.45;
-        },
+        nodeRepulsion: 8000,
+        idealEdgeLength: 80,
+        edgeElasticity: 0.45,
         gravity: 0.4,
         gravityRange: 3.8,
-        gravityCompound: 1.5,
-        gravityOverlapCompound: 2.0,
         nestingFactor: 0.1,
         numIter: 2500,
         tile: true,
@@ -205,17 +170,16 @@ export function getHtmlTemplate(): string {
       }
       live();
 
-      function registerFcose() {
-        var plugin = window.cytoscapeFcose;
-        if (!plugin) {
+      function registerCoseBilkent() {
+        if (typeof cytoscapeCoseBilkent === "undefined") {
           return false;
         }
 
         try {
-          window.cytoscape.use(plugin.default || plugin);
+          cytoscape.use(cytoscapeCoseBilkent);
           return true;
         } catch (error) {
-          console.error("Failed to register fcose plugin, falling back to cose:", error);
+          console.error("Failed to register cose-bilkent, falling back to cose:", error);
           return false;
         }
       }
@@ -485,7 +449,7 @@ export function getHtmlTemplate(): string {
 
         var visible = state.cy.elements(":visible");
         var target = visible.length ? visible : state.cy.elements();
-        var options = state.fcoseReady ? LAYOUT_OPTIONS : COSE_FALLBACK_OPTIONS;
+        var options = state.bilkentReady ? LAYOUT_OPTIONS : COSE_FALLBACK_OPTIONS;
         state.cy.layout(Object.assign({}, options, { eles: target })).run();
       }
 
