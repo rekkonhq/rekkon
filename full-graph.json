@@ -1,23 +1,35 @@
 {
   "version": "1.0.0",
-  "generated_at": "2026-02-09T09:56:15.042Z",
+  "generated_at": "2026-02-09T10:55:02.144Z",
   "analyzer_version": "0.1.0",
   "snapshot": {
     "schema_version": "1.0.0",
     "total_files": 44,
-    "total_symbols": 174,
+    "total_symbols": 177,
     "total_edges": 60,
-    "total_loc": 4292,
+    "total_loc": 4543,
     "languages": [
       "typescript"
     ],
     "framework": "react",
     "layer_summary": [
       {
+        "id": "layer:237641f0",
+        "label": "API",
+        "file_count": 2,
+        "symbol_count": 7
+      },
+      {
+        "id": "layer:536cbbfe",
+        "label": "Config",
+        "file_count": 1,
+        "symbol_count": 1
+      },
+      {
         "id": "layer:24665d71",
         "label": "Core",
-        "file_count": 5,
-        "symbol_count": 15
+        "file_count": 13,
+        "symbol_count": 72
       },
       {
         "id": "layer:bdf89cf6",
@@ -32,10 +44,16 @@
         "symbol_count": 10
       },
       {
+        "id": "layer:79e71ed7",
+        "label": "Lib",
+        "file_count": 5,
+        "symbol_count": 15
+      },
+      {
         "id": "layer:73a5a466",
         "label": "Other",
-        "file_count": 24,
-        "symbol_count": 101
+        "file_count": 4,
+        "symbol_count": 18
       },
       {
         "id": "layer:a9ca8bfc",
@@ -44,16 +62,22 @@
         "symbol_count": 5
       },
       {
+        "id": "layer:3eac612d",
+        "label": "Tests",
+        "file_count": 1,
+        "symbol_count": 1
+      },
+      {
         "id": "layer:cd22dcc8",
         "label": "UI",
-        "file_count": 5,
-        "symbol_count": 18
+        "file_count": 8,
+        "symbol_count": 23
       }
     ],
-    "analysis_duration_ms": 101,
+    "analysis_duration_ms": 118,
     "analyzer_version": "0.1.0",
     "trigger": "manual",
-    "analyzed_at": "2026-02-09T09:56:15.042Z"
+    "analyzed_at": "2026-02-09T10:55:02.144Z"
   },
   "elements": {
     "nodes": [
@@ -368,7 +392,7 @@
           "label": "getHtmlTemplate",
           "parent_id": "file:4407452b",
           "file_path": "packages/cli/src/server/template.ts",
-          "loc": 1059,
+          "loc": 1164,
           "export_count": 0,
           "import_count": 0,
           "is_exported": true,
@@ -378,7 +402,7 @@
             "return_type": "string",
             "params": [],
             "line": 1,
-            "end_line": 1059
+            "end_line": 1164
           },
           "parent": "file:4407452b"
         }
@@ -481,13 +505,13 @@
       },
       {
         "data": {
-          "id": "symbol:a6e7f9f6",
+          "id": "symbol:6f81dee9",
           "type": "symbol",
           "subtype": "constant",
-          "label": "DEFAULT_LAYER_RULES",
+          "label": "DEFAULT_LAYER_RULES_MULTI",
           "parent_id": "file:d216a6bf",
           "file_path": "packages/core/src/constants/layer-rules.ts",
-          "loc": 32,
+          "loc": 6,
           "export_count": 0,
           "import_count": 0,
           "is_exported": true,
@@ -495,7 +519,28 @@
             "language": "typescript",
             "is_async": false,
             "line": 4,
-            "end_line": 35
+            "end_line": 9
+          },
+          "parent": "file:d216a6bf"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:a6e7f9f6",
+          "type": "symbol",
+          "subtype": "constant",
+          "label": "DEFAULT_LAYER_RULES",
+          "parent_id": "file:d216a6bf",
+          "file_path": "packages/core/src/constants/layer-rules.ts",
+          "loc": 118,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": true,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "line": 11,
+            "end_line": 128
           },
           "parent": "file:d216a6bf"
         }
@@ -1946,7 +1991,7 @@
           "label": "classifyFileToLayer",
           "parent_id": "file:a46eb94f",
           "file_path": "packages/parser/src/graph/layers.ts",
-          "loc": 22,
+          "loc": 28,
           "export_count": 0,
           "import_count": 0,
           "is_exported": true,
@@ -1960,7 +2005,61 @@
               }
             ],
             "line": 3,
-            "end_line": 24
+            "end_line": 30
+          },
+          "parent": "file:a46eb94f"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:69bfdf63",
+          "type": "symbol",
+          "subtype": "function",
+          "label": "classifyByMultiSegmentRules",
+          "parent_id": "file:a46eb94f",
+          "file_path": "packages/parser/src/graph/layers.ts",
+          "loc": 13,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "return_type": "string | null",
+            "params": [
+              {
+                "name": "dirParts"
+              }
+            ],
+            "line": 32,
+            "end_line": 44
+          },
+          "parent": "file:a46eb94f"
+        }
+      },
+      {
+        "data": {
+          "id": "symbol:5f0a2037",
+          "type": "symbol",
+          "subtype": "function",
+          "label": "classifyByFilename",
+          "parent_id": "file:a46eb94f",
+          "file_path": "packages/parser/src/graph/layers.ts",
+          "loc": 79,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "language": "typescript",
+            "is_async": false,
+            "return_type": "string | null",
+            "params": [
+              {
+                "name": "filename"
+              }
+            ],
+            "line": 46,
+            "end_line": 124
           },
           "parent": "file:a46eb94f"
         }
@@ -1986,8 +2085,8 @@
                 "name": "value"
               }
             ],
-            "line": 26,
-            "end_line": 28
+            "line": 126,
+            "end_line": 128
           },
           "parent": "file:a46eb94f"
         }
@@ -4531,7 +4630,7 @@
           "label": "template.ts",
           "parent_id": "module:ab6cf2ff",
           "file_path": "packages/cli/src/server/template.ts",
-          "loc": 1013,
+          "loc": 1092,
           "complexity": 100,
           "export_count": 1,
           "import_count": 0,
@@ -4604,9 +4703,9 @@
           "label": "layer-rules.ts",
           "parent_id": "module:f4c8d958",
           "file_path": "packages/core/src/constants/layer-rules.ts",
-          "loc": 33,
-          "complexity": 3,
-          "export_count": 1,
+          "loc": 117,
+          "complexity": 11,
+          "export_count": 2,
           "import_count": 0,
           "is_exported": true,
           "metadata": {
@@ -4913,8 +5012,8 @@
           "label": "layers.ts",
           "parent_id": "module:cb9911ce",
           "file_path": "packages/parser/src/graph/layers.ts",
-          "loc": 23,
-          "complexity": 2,
+          "loc": 111,
+          "complexity": 12,
           "export_count": 1,
           "import_count": 1,
           "is_exported": true,
@@ -5257,7 +5356,7 @@
           "id": "module:ecc1113b",
           "type": "module",
           "label": "cli",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:24665d71",
           "file_path": "cli",
           "loc": 31,
           "complexity": 3,
@@ -5267,7 +5366,7 @@
           "metadata": {
             "file_count": 1
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:24665d71"
         }
       },
       {
@@ -5275,7 +5374,7 @@
           "id": "module:10228d91",
           "type": "module",
           "label": "cli/commands",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:24665d71",
           "file_path": "cli/commands",
           "loc": 143,
           "complexity": 14,
@@ -5285,7 +5384,7 @@
           "metadata": {
             "file_count": 2
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:24665d71"
         }
       },
       {
@@ -5293,9 +5392,9 @@
           "id": "module:ab6cf2ff",
           "type": "module",
           "label": "cli/server",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:237641f0",
           "file_path": "cli/server",
-          "loc": 1192,
+          "loc": 1271,
           "complexity": 100,
           "export_count": 3,
           "import_count": 6,
@@ -5303,7 +5402,7 @@
           "metadata": {
             "file_count": 2
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:237641f0"
         }
       },
       {
@@ -5311,7 +5410,7 @@
           "id": "module:fcbfe9f4",
           "type": "module",
           "label": "cli/utils",
-          "parent_id": "layer:24665d71",
+          "parent_id": "layer:79e71ed7",
           "file_path": "cli/utils",
           "loc": 15,
           "complexity": 1,
@@ -5321,7 +5420,7 @@
           "metadata": {
             "file_count": 1
           },
-          "parent": "layer:24665d71"
+          "parent": "layer:79e71ed7"
         }
       },
       {
@@ -5329,7 +5428,7 @@
           "id": "module:6eb8dc31",
           "type": "module",
           "label": "core",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:24665d71",
           "file_path": "core",
           "loc": 3,
           "complexity": 0,
@@ -5339,7 +5438,7 @@
           "metadata": {
             "file_count": 1
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:24665d71"
         }
       },
       {
@@ -5347,17 +5446,17 @@
           "id": "module:f4c8d958",
           "type": "module",
           "label": "core/constants",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:24665d71",
           "file_path": "core/constants",
-          "loc": 79,
-          "complexity": 8,
-          "export_count": 5,
+          "loc": 163,
+          "complexity": 17,
+          "export_count": 6,
           "import_count": 3,
           "is_exported": false,
           "metadata": {
             "file_count": 4
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:24665d71"
         }
       },
       {
@@ -5383,7 +5482,7 @@
           "id": "module:211e3b67",
           "type": "module",
           "label": "core/utils",
-          "parent_id": "layer:24665d71",
+          "parent_id": "layer:79e71ed7",
           "file_path": "core/utils",
           "loc": 63,
           "complexity": 7,
@@ -5393,7 +5492,7 @@
           "metadata": {
             "file_count": 3
           },
-          "parent": "layer:24665d71"
+          "parent": "layer:79e71ed7"
         }
       },
       {
@@ -5419,7 +5518,7 @@
           "id": "module:86a8ff47",
           "type": "module",
           "label": "mcp/tools",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:536cbbfe",
           "file_path": "mcp/tools",
           "loc": 16,
           "complexity": 1,
@@ -5429,7 +5528,7 @@
           "metadata": {
             "file_count": 1
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:536cbbfe"
         }
       },
       {
@@ -5455,17 +5554,17 @@
           "id": "module:cb9911ce",
           "type": "module",
           "label": "parser/graph",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:24665d71",
           "file_path": "parser/graph",
-          "loc": 566,
-          "complexity": 57,
+          "loc": 654,
+          "complexity": 66,
           "export_count": 4,
           "import_count": 8,
           "is_exported": false,
           "metadata": {
             "file_count": 3
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:24665d71"
         }
       },
       {
@@ -5473,7 +5572,7 @@
           "id": "module:7cac943a",
           "type": "module",
           "label": "parser/languages",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:24665d71",
           "file_path": "parser/languages",
           "loc": 489,
           "complexity": 48,
@@ -5483,7 +5582,7 @@
           "metadata": {
             "file_count": 2
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:24665d71"
         }
       },
       {
@@ -5491,7 +5590,7 @@
           "id": "module:f016e921",
           "type": "module",
           "label": "parser/test",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:3eac612d",
           "file_path": "parser/test",
           "loc": 23,
           "complexity": 2,
@@ -5501,7 +5600,7 @@
           "metadata": {
             "file_count": 1
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:3eac612d"
         }
       },
       {
@@ -5509,7 +5608,7 @@
           "id": "module:1fd02985",
           "type": "module",
           "label": "parser/utils",
-          "parent_id": "layer:24665d71",
+          "parent_id": "layer:79e71ed7",
           "file_path": "parser/utils",
           "loc": 103,
           "complexity": 10,
@@ -5519,7 +5618,7 @@
           "metadata": {
             "file_count": 1
           },
-          "parent": "layer:24665d71"
+          "parent": "layer:79e71ed7"
         }
       },
       {
@@ -5527,7 +5626,7 @@
           "id": "module:04d2283b",
           "type": "module",
           "label": "visualizer",
-          "parent_id": "layer:73a5a466",
+          "parent_id": "layer:cd22dcc8",
           "file_path": "visualizer",
           "loc": 45,
           "complexity": 5,
@@ -5537,7 +5636,7 @@
           "metadata": {
             "file_count": 3
           },
-          "parent": "layer:73a5a466"
+          "parent": "layer:cd22dcc8"
         }
       },
       {
@@ -5596,16 +5695,46 @@
       },
       {
         "data": {
-          "id": "layer:24665d71",
+          "id": "layer:237641f0",
           "type": "layer",
-          "label": "Core",
-          "loc": 181,
+          "label": "API",
+          "loc": 1271,
           "export_count": 0,
           "import_count": 0,
           "is_exported": false,
           "metadata": {
-            "module_count": 3,
-            "file_count": 5
+            "module_count": 1,
+            "file_count": 2
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "layer:536cbbfe",
+          "type": "layer",
+          "label": "Config",
+          "loc": 16,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "module_count": 1,
+            "file_count": 1
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "layer:24665d71",
+          "type": "layer",
+          "label": "Core",
+          "loc": 1483,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "module_count": 6,
+            "file_count": 13
           }
         }
       },
@@ -5641,16 +5770,31 @@
       },
       {
         "data": {
-          "id": "layer:73a5a466",
+          "id": "layer:79e71ed7",
           "type": "layer",
-          "label": "Other",
-          "loc": 2787,
+          "label": "Lib",
+          "loc": 181,
           "export_count": 0,
           "import_count": 0,
           "is_exported": false,
           "metadata": {
-            "module_count": 12,
-            "file_count": 24
+            "module_count": 3,
+            "file_count": 5
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "layer:73a5a466",
+          "type": "layer",
+          "label": "Other",
+          "loc": 200,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "module_count": 2,
+            "file_count": 4
           }
         }
       },
@@ -5671,16 +5815,31 @@
       },
       {
         "data": {
-          "id": "layer:cd22dcc8",
+          "id": "layer:3eac612d",
           "type": "layer",
-          "label": "UI",
-          "loc": 662,
+          "label": "Tests",
+          "loc": 23,
           "export_count": 0,
           "import_count": 0,
           "is_exported": false,
           "metadata": {
             "module_count": 1,
-            "file_count": 5
+            "file_count": 1
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "layer:cd22dcc8",
+          "type": "layer",
+          "label": "UI",
+          "loc": 707,
+          "export_count": 0,
+          "import_count": 0,
+          "is_exported": false,
+          "metadata": {
+            "module_count": 2,
+            "file_count": 8
           }
         }
       }
