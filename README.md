@@ -6,7 +6,7 @@ Rekkon parses your codebase using tree-sitter, builds a layered architecture gra
 
 ## Status
 
-🚧 **Early development** — core types and parser PoC are working.
+🚧 **Early development** — core types and parser package are ready.
 
 ## Packages
 

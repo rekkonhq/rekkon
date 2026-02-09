@@ -16,7 +16,8 @@ export async function analyzeCommand(targetDir: string): Promise<void> {
     throw new Error(`Directory not found: ${projectRoot}`);
   }
 
-  const graph = await analyze({ rootDir: projectRoot });
+  const result = await analyze({ rootDir: projectRoot });
+  const graph = result.graph;
   const outputDir = resolve(projectRoot, '.archviz');
   mkdirSync(outputDir, { recursive: true });
 
@@ -44,8 +45,9 @@ export async function analyzeCommand(targetDir: string): Promise<void> {
     languages: graph.snapshot.languages,
     framework: graph.snapshot.framework ?? undefined,
     layer_summary: graph.snapshot.layer_summary,
-    analysis_duration_ms: graph.snapshot.analysis_duration_ms ?? undefined,
+    analysis_duration_ms: result.duration_ms,
     analyzer_version: graph.analyzer_version,
+    errors: result.errors,
   };
   const summaryPath = resolve(outputDir, 'summary.json');
   writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
@@ -55,5 +57,6 @@ export async function analyzeCommand(targetDir: string): Promise<void> {
   console.log(`Symbols: ${summary.total_symbols}`);
   console.log(`Edges: ${summary.total_edges}`);
   console.log(`LOC: ${summary.total_loc}`);
+  console.log(`Errors: ${result.errors.length}`);
   console.log(`Output: ${outputDir}`);
 }
