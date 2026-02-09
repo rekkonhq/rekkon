@@ -16,7 +16,7 @@ Rekkon parses your codebase using tree-sitter, builds a layered architecture gra
 | `@rekkon/parser` | Tree-sitter codebase analysis engine | ✅ Implemented |
 | `@rekkon/cli` | `rekkon analyze` CLI command | ✅ Ready |
 | `@rekkon/mcp` | MCP server for AI agents | 📋 Planned |
-| `@rekkon/visualizer` | Local Cytoscape.js graph viewer | 🔨 PoC complete, migration pending |
+| `@rekkon/visualizer` | Local Cytoscape.js graph viewer | ✅ Ready |
 
 ## Quick Start
 

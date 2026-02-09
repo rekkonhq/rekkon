@@ -1,20 +1,38 @@
 {
   "name": "@rekkon/visualizer",
   "version": "0.1.0",
-  "description": "Local Cytoscape.js visualizer for Rekkon graphs",
+  "description": "Interactive Cytoscape.js architecture graph visualizer for Rekkon",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@rekkon/core": "0.1.0"
+    "@rekkon/core": "0.1.0",
+    "cytoscape": "^3.30.0",
+    "cytoscape-fcose": "^2.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
+    "@types/cytoscape": "^3.21.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "typescript": "^5.5.0"
   }
 }
