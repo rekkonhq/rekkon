@@ -61,6 +61,7 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
 
   const wss = new WebSocketServer({ server });
   const clients = new Set<WebSocket>();
+  let lastReloadAt = Date.now();
 
   wss.on('error', (error: Error) => {
     const code = (error as NodeJS.ErrnoException).code;
@@ -90,6 +91,11 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
     }
 
     graphJson = next;
+    const now = Date.now();
+    if (now - lastReloadAt < 2000) {
+      return;
+    }
+    lastReloadAt = now;
     console.log(chalk.dim('Graph file changed, reloading...'));
     for (const client of clients) {
       if (client.readyState === WebSocket.OPEN) {

@@ -61,23 +61,20 @@ export function getHtmlTemplate(): string {
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.4/cytoscape.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
   <script>
     (function() {
-      if (!window.cytoscape || !window.cytoscapeFcose) { fatal("Failed to load Cytoscape dependencies from CDN."); return; }
-      cytoscape.use(cytoscapeFcose);
-
-      var LAYERS = {API:{bg:"#1e3a5f",border:"#3b82f6",text:"#93c5fd"},Pages:{bg:"#1e3a5f",border:"#3b82f6",text:"#93c5fd"},UI:{bg:"#2d1b4e",border:"#8b5cf6",text:"#c4b5fd"},Hooks:{bg:"#1b2e4a",border:"#06b6d4",text:"#67e8f9"},Core:{bg:"#1a3329",border:"#22c55e",text:"#86efac"},Services:{bg:"#2a1f0f",border:"#f59e0b",text:"#fcd34d"},State:{bg:"#2d1b4e",border:"#a855f7",text:"#d8b4fe"},Data:{bg:"#1a2332",border:"#6366f1",text:"#a5b4fc"},Config:{bg:"#1f1f1f",border:"#6b7280",text:"#9ca3af"},Types:{bg:"#1f2937",border:"#6b7280",text:"#9ca3af"},Tests:{bg:"#1c1917",border:"#78716c",text:"#a8a29e"},Middleware:{bg:"#2a1f0f",border:"#f59e0b",text:"#fcd34d"},Styles:{bg:"#2d1b33",border:"#ec4899",text:"#f9a8d4"},Assets:{bg:"#1f2937",border:"#6b7280",text:"#9ca3af"},Other:{bg:"#1f2937",border:"#6b7280",text:"#9ca3af"}};
-      var EDGES = {imports:{color:"#64748b",d:false},calls:{color:"#3b82f6",d:false},exports:{color:"#22c55e",d:false},renders:{color:"#a855f7",d:false},extends:{color:"#f59e0b",d:true},implements:{color:"#f59e0b",d:true},type_depends:{color:"#6b7280",d:true}};
-      var SHAPES = {component:"round-rectangle",page:"round-rectangle",hook:"diamond",function:"ellipse",class:"hexagon",interface:"pentagon","type-alias":"pentagon",constant:"round-rectangle",variable:"round-rectangle",utility:"round-rectangle",config:"round-rectangle",route:"tag",test:"round-rectangle",style:"round-rectangle",enum:"octagon","type-definition":"pentagon",default:"ellipse"};
-
       var ui = {
         stats: byId("stats"), loading: byId("loading"), main: byId("main"), detail: byId("detail"), layers: byId("layers"),
         fit: byId("fit"), zin: byId("zin"), zout: byId("zout"), relayout: byId("relayout"), symbols: byId("symbols"), layersbtn: byId("layersbtn"), cy: byId("cy")
       };
       var state = { cy: null, graph: null, symbols: false, hidden: new Set(), layersOpen: false };
 
-      init();
+      if (!window.cytoscape) { fatal("Failed to load Cytoscape from CDN."); return; }
+
+      var LAYERS = {API:{bg:"#1e3a5f",border:"#3b82f6",text:"#93c5fd"},Pages:{bg:"#1e3a5f",border:"#3b82f6",text:"#93c5fd"},UI:{bg:"#2d1b4e",border:"#8b5cf6",text:"#c4b5fd"},Hooks:{bg:"#1b2e4a",border:"#06b6d4",text:"#67e8f9"},Core:{bg:"#1a3329",border:"#22c55e",text:"#86efac"},Services:{bg:"#2a1f0f",border:"#f59e0b",text:"#fcd34d"},State:{bg:"#2d1b4e",border:"#a855f7",text:"#d8b4fe"},Data:{bg:"#1a2332",border:"#6366f1",text:"#a5b4fc"},Config:{bg:"#1f1f1f",border:"#6b7280",text:"#9ca3af"},Types:{bg:"#1f2937",border:"#6b7280",text:"#9ca3af"},Tests:{bg:"#1c1917",border:"#78716c",text:"#a8a29e"},Middleware:{bg:"#2a1f0f",border:"#f59e0b",text:"#fcd34d"},Styles:{bg:"#2d1b33",border:"#ec4899",text:"#f9a8d4"},Assets:{bg:"#1f2937",border:"#6b7280",text:"#9ca3af"},Other:{bg:"#1f2937",border:"#6b7280",text:"#9ca3af"}};
+      var EDGES = {imports:{color:"#64748b",d:false},calls:{color:"#3b82f6",d:false},exports:{color:"#22c55e",d:false},renders:{color:"#a855f7",d:false},extends:{color:"#f59e0b",d:true},implements:{color:"#f59e0b",d:true},type_depends:{color:"#6b7280",d:true}};
+      var SHAPES = {component:"round-rectangle",page:"round-rectangle",hook:"diamond",function:"ellipse",class:"hexagon",interface:"pentagon","type-alias":"pentagon",constant:"round-rectangle",variable:"round-rectangle",utility:"round-rectangle",config:"round-rectangle",route:"tag",test:"round-rectangle",style:"round-rectangle",enum:"octagon","type-definition":"pentagon",default:"ellipse"};
+      try { init(); } catch (e) { renderInitError(e); }
       live();
 
       async function init() {
@@ -92,16 +89,16 @@ export function getHtmlTemplate(): string {
           wireGraph();
           applyVisibility();
           layout();
-          ui.loading.style.display = "none";
+          if (ui.loading) ui.loading.style.display = "none";
         } catch (e) {
-          fatal("Failed to initialize visualizer: " + (e && e.message ? e.message : String(e)));
+          renderInitError(e);
         }
       }
 
       function mount() {
         var nodes = ((state.graph || {}).elements || {}).nodes || [];
         var edges = ((state.graph || {}).elements || {}).edges || [];
-        state.cy = cytoscape({ container: ui.cy, elements: nodes.concat(edges), style: styleSheet(), minZoom: 0.1, maxZoom: 5, wheelSensitivity: 0.25 });
+        state.cy = cytoscape({ container: ui.cy, elements: nodes.concat(edges), style: styleSheet(), minZoom: 0.005, maxZoom: 5 });
         colorize(nodes);
       }
 
@@ -166,7 +163,24 @@ export function getHtmlTemplate(): string {
 
       function layout() {
         if (!state.cy) return;
-        state.cy.layout({ name:"fcose", animate:true, animationDuration:500, fit:true, padding:50, nodeSeparation:80, idealEdgeLength:140, nodeRepulsion:function(){return 9000;}, edgeElasticity:function(){return 0.4;}, gravity:0.25, gravityRange:3.8, quality:"default" }).run();
+        var visible = state.cy.elements(":visible");
+        var target = visible.length ? visible : state.cy.elements();
+        target.layout({
+          name:"cose",
+          animate:false,
+          fit:false,
+          padding:50,
+          componentSpacing: 120,
+          boundingBox:{ x1:0, y1:0, w:Math.max(1, state.cy.width()), h:Math.max(1, state.cy.height()) },
+          nodeRepulsion:function(){ return 5000; },
+          idealEdgeLength:function(){ return 90; },
+          edgeElasticity:function(){ return 0.45; },
+          gravity:0.25,
+          numIter:1000,
+          nodeDimensionsIncludeLabels:true
+        }).run();
+        var fitTarget = state.cy.elements(":visible");
+        if (fitTarget.length) state.cy.fit(fitTarget, 50);
       }
 
       function wireGraph() {
@@ -293,9 +307,24 @@ export function getHtmlTemplate(): string {
         }
       }
 
-      function fatal(msg) {
+      function renderInitError(err) {
         if (ui.loading) ui.loading.style.display = "none";
-        var n = document.createElement("div"); n.className = "e"; n.textContent = msg; ui.main.appendChild(n);
+        var cyEl = byId("cy");
+        var msg = err && err.message ? err.message : String(err);
+        if (cyEl) {
+          cyEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f87171;font-size:14px;padding:20px;text-align:center;">' + "Failed to load graph: " + esc(msg) + "</div>";
+        } else {
+          fatal("Failed to load graph: " + msg);
+        }
+        console.error("Rekkon visualizer error:", err);
+      }
+
+      function fatal(msg) {
+        var loading = ui && ui.loading ? ui.loading : byId("loading");
+        if (loading) loading.style.display = "none";
+        var main = ui && ui.main ? ui.main : byId("main");
+        if (!main) { console.error(msg); return; }
+        var n = document.createElement("div"); n.className = "e"; n.textContent = msg; main.appendChild(n);
       }
       function val(v) { if (v == null) return ""; if (typeof v === "string") return v; try { return JSON.stringify(v); } catch (_) { return String(v); } }
       function num(v) { var n = Number(v); return isFinite(n) ? n.toLocaleString() : "0"; }
