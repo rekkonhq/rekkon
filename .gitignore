@@ -142,3 +142,7 @@ vite.config.ts.timestamp-*
 **/.turbo/
 .archviz/
 **/.archviz/
+
+# Old PoC artifacts
+test-output.json
+core-graph.json
