@@ -1,13 +1,13 @@
 {
   "version": "1.0.0",
-  "generated_at": "2026-02-09T08:27:16.467Z",
+  "generated_at": "2026-02-09T09:56:15.042Z",
   "analyzer_version": "0.1.0",
   "snapshot": {
     "schema_version": "1.0.0",
     "total_files": 44,
     "total_symbols": 174,
     "total_edges": 60,
-    "total_loc": 3678,
+    "total_loc": 4292,
     "languages": [
       "typescript"
     ],
@@ -50,10 +50,10 @@
         "symbol_count": 18
       }
     ],
-    "analysis_duration_ms": 103,
+    "analysis_duration_ms": 101,
     "analyzer_version": "0.1.0",
     "trigger": "manual",
-    "analyzed_at": "2026-02-09T08:27:16.467Z"
+    "analyzed_at": "2026-02-09T09:56:15.042Z"
   },
   "elements": {
     "nodes": [
@@ -368,7 +368,7 @@
           "label": "getHtmlTemplate",
           "parent_id": "file:4407452b",
           "file_path": "packages/cli/src/server/template.ts",
-          "loc": 424,
+          "loc": 1059,
           "export_count": 0,
           "import_count": 0,
           "is_exported": true,
@@ -378,7 +378,7 @@
             "return_type": "string",
             "params": [],
             "line": 1,
-            "end_line": 424
+            "end_line": 1059
           },
           "parent": "file:4407452b"
         }
@@ -4531,8 +4531,8 @@
           "label": "template.ts",
           "parent_id": "module:ab6cf2ff",
           "file_path": "packages/cli/src/server/template.ts",
-          "loc": 399,
-          "complexity": 39,
+          "loc": 1013,
+          "complexity": 100,
           "export_count": 1,
           "import_count": 0,
           "is_exported": true,
@@ -5295,8 +5295,8 @@
           "label": "cli/server",
           "parent_id": "layer:73a5a466",
           "file_path": "cli/server",
-          "loc": 578,
-          "complexity": 57,
+          "loc": 1192,
+          "complexity": 100,
           "export_count": 3,
           "import_count": 6,
           "is_exported": false,
@@ -5644,7 +5644,7 @@
           "id": "layer:73a5a466",
           "type": "layer",
           "label": "Other",
-          "loc": 2173,
+          "loc": 2787,
           "export_count": 0,
           "import_count": 0,
           "is_exported": false,
