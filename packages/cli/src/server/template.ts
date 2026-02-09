@@ -4,70 +4,387 @@ export function getHtmlTemplate(): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rekkon Visualizer</title>
+  <title>Rekkon — Architecture Graph</title>
   <style>
-    :root{--bg:#020617;--bg2:#0f172a;--panel:rgba(15,23,42,.92);--line:#1e293b;--line2:#334155;--txt:#e2e8f0;--muted:#94a3b8;--sub:#64748b;--accent:#38bdf8;--warn:#fbbf24;--err:#f87171}
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%;overflow:hidden;background:radial-gradient(140% 100% at 10% 0%,#172554 0%,#0f172a 48%,#020617 100%);color:var(--txt);font-family:"IBM Plex Sans","Segoe UI",sans-serif}
-    #app{height:100%;display:grid;grid-template-rows:50px 1fr}
-    #top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 14px;border-bottom:1px solid var(--line);background:rgba(2,6,23,.82)}
-    #logo{color:var(--accent);font-size:14px;font-weight:700}
-    #stats{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .v{color:#f8fafc;font-weight:700}
-    #main{position:relative;min-height:0}
-    #cy{width:100%;height:100%}
-    #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px}
-    #controls{position:absolute;left:12px;top:12px;z-index:20;display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
-    .b{width:34px;height:34px;border-radius:8px;border:1px solid var(--line2);background:#111827;color:var(--txt);cursor:pointer;font-size:12px;font-weight:700}
-    .b:hover{background:#1f2937}
-    .b.on{border-color:var(--accent);background:#0f2944;color:#bae6fd}
-    #layers{display:none;position:absolute;left:72px;top:14px;z-index:30;min-width:220px;max-height:50vh;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
-    #layers.open{display:block}
-    .lt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin-bottom:8px}
-    .lr{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:var(--muted)}
-    .lr:hover{color:var(--txt)}
-    .dot{width:8px;height:8px;border-radius:999px}
-    #detail{position:absolute;top:0;right:0;bottom:0;width:min(360px,90vw);transform:translateX(100%);transition:transform .18s ease;z-index:40;overflow:auto;padding:16px;border-left:1px solid var(--line);background:linear-gradient(180deg,rgba(15,23,42,.97),rgba(2,6,23,.97))}
-    #detail.show{transform:translateX(0)}
-    .x{float:right;border:0;background:transparent;color:var(--sub);font-size:18px;cursor:pointer}
-    .x:hover{color:var(--txt)}
-    .t{font-size:16px;font-weight:700;color:#f8fafc;margin-bottom:4px;padding-right:18px;word-break:break-word}
-    .s{font-size:11px;color:var(--sub);margin-bottom:14px;word-break:break-all}
-    .st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#475569;margin:16px 0 8px}
-    .row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid rgba(51,65,85,.35)}
-    .k{color:var(--muted)}
-    .val{max-width:60%;text-align:right;color:var(--txt);font-weight:600;word-break:break-word}
-    .c{margin:4px 0;padding:5px 8px;border:1px solid rgba(51,65,85,.35);border-radius:6px;background:rgba(15,23,42,.7);color:var(--muted);font-size:12px;word-break:break-word}
-    .e{position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:var(--err);background:rgba(2,6,23,.8)}
-    @media (max-width:900px){#stats{display:none}#detail{width:100%}}
+    :root {
+      --bg: #020617;
+      --bg2: #0f172a;
+      --panel: rgba(15, 23, 42, 0.95);
+      --line: #1e293b;
+      --line2: #334155;
+      --txt: #e2e8f0;
+      --muted: #94a3b8;
+      --sub: #64748b;
+      --accent: #38bdf8;
+      --warn: #fbbf24;
+      --err: #f87171;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      color: var(--txt);
+      background: radial-gradient(ellipse 140% 100% at 10% 0%, #172554 0%, #0f172a 48%, #020617 100%);
+      font-family: "IBM Plex Sans", "Inter", "Segoe UI", system-ui, sans-serif;
+    }
+
+    #app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: 48px 1fr;
+    }
+
+    #top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.78);
+      backdrop-filter: blur(6px);
+    }
+
+    #logo {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.04em;
+      text-transform: lowercase;
+    }
+
+    #stats {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #main {
+      position: relative;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #cy {
+      width: 100%;
+      height: 100%;
+    }
+
+    #loading {
+      position: absolute;
+      inset: 0;
+      z-index: 35;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2, 6, 23, 0.5);
+      color: var(--muted);
+      font-size: 14px;
+      letter-spacing: 0.02em;
+    }
+
+    #controls {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 12px 32px rgba(2, 6, 23, 0.45);
+    }
+
+    .ctrl {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line2);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--txt);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease;
+    }
+
+    .ctrl:hover {
+      background: #13243f;
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .ctrl.active {
+      border-color: var(--accent);
+      color: #bae6fd;
+      background: #0c3352;
+    }
+
+    #layers {
+      position: absolute;
+      top: 12px;
+      left: 64px;
+      z-index: 41;
+      width: min(280px, calc(100vw - 88px));
+      max-height: min(60vh, 520px);
+      overflow: auto;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 14px 38px rgba(2, 6, 23, 0.52);
+      transform: translateX(-115%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 180ms ease, opacity 180ms ease;
+    }
+
+    #layers.open {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .layers-title {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--sub);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .layer-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 6px 0;
+      font-size: 13px;
+      color: var(--muted);
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .layer-row:hover {
+      color: var(--txt);
+    }
+
+    .layer-check {
+      accent-color: var(--accent);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    .layer-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      box-shadow: 0 0 0 2px rgba(2, 6, 23, 0.5);
+    }
+
+    #detail {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 45;
+      width: min(420px, 95vw);
+      border-left: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
+      box-shadow: -12px 0 32px rgba(2, 6, 23, 0.6);
+      padding: 16px;
+      overflow: auto;
+      transform: translateX(100%);
+      transition: transform 180ms ease;
+    }
+
+    #detail.open {
+      transform: translateX(0);
+    }
+
+    .detail-close {
+      float: right;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      margin-left: 6px;
+    }
+
+    .detail-close:hover {
+      color: var(--txt);
+    }
+
+    .detail-title {
+      font-size: 18px;
+      line-height: 1.25;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #f8fafc;
+      word-break: break-word;
+      padding-right: 24px;
+    }
+
+    .detail-path {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .detail-section {
+      margin-top: 10px;
+    }
+
+    .detail-section-title {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--sub);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.38);
+      font-size: 13px;
+    }
+
+    .detail-key {
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+
+    .detail-value {
+      color: var(--txt);
+      font-weight: 600;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .conn-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .conn-item {
+      border: 1px solid rgba(51, 65, 85, 0.45);
+      background: rgba(15, 23, 42, 0.65);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 7px 9px;
+      font-size: 12px;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .conn-item.empty {
+      font-style: italic;
+      color: var(--sub);
+    }
+
+    .error-message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      color: var(--err);
+      font-size: 14px;
+      background: rgba(2, 6, 23, 0.82);
+    }
+
+    @media (max-width: 900px) {
+      #stats {
+        display: none;
+      }
+
+      #controls {
+        left: 10px;
+        top: 10px;
+      }
+
+      #layers {
+        top: 64px;
+        left: 10px;
+      }
+
+      #detail {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
   <div id="app">
-    <div id="top"><span id="logo">rekkon</span><div id="stats">Loading graph...</div></div>
+    <div id="top">
+      <span id="logo">rekkon</span>
+      <div id="stats">Loading...</div>
+    </div>
     <div id="main">
       <div id="controls">
-        <button class="b" id="fit" title="Fit view">FIT</button>
-        <button class="b" id="zin" title="Zoom in">+</button>
-        <button class="b" id="zout" title="Zoom out">-</button>
-        <button class="b" id="relayout" title="Re-layout">LAY</button>
-        <button class="b" id="symbols" title="Toggle symbols">SYM</button>
-        <button class="b" id="layersbtn" title="Filter layers">LYR</button>
+        <button id="fit" class="ctrl" title="Fit graph">⊡</button>
+        <button id="zin" class="ctrl" title="Zoom in">+</button>
+        <button id="zout" class="ctrl" title="Zoom out">−</button>
+        <button id="relayout" class="ctrl" title="Re-layout">↻</button>
+        <button id="symbols" class="ctrl" title="Symbols">Σ</button>
+        <button id="layersbtn" class="ctrl" title="Layers">▤</button>
       </div>
       <div id="layers"></div>
       <div id="cy"></div>
-      <div id="loading">Loading architecture graph...</div>
+      <div id="loading">Analyzing architecture...</div>
       <div id="detail"></div>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.4/cytoscape.min.js"></script>
-  <script src="https://unpkg.com/cytoscape-cose-bilkent@4.1.0/cytoscape-cose-bilkent.js"></script>
   <script>
     (function() {
       var ui = {
         stats: byId("stats"),
         loading: byId("loading"),
-        main: byId("main"),
+        cy: byId("cy"),
         detail: byId("detail"),
         layers: byId("layers"),
         fit: byId("fit"),
@@ -75,132 +392,85 @@ export function getHtmlTemplate(): string {
         zout: byId("zout"),
         relayout: byId("relayout"),
         symbols: byId("symbols"),
-        layersbtn: byId("layersbtn"),
-        cy: byId("cy")
+        layersbtn: byId("layersbtn")
       };
 
       var state = {
         cy: null,
         graph: null,
         symbols: false,
-        hidden: new Set(),
         layersOpen: false,
-        bilkentReady: false
+        hiddenLayers: Object.create(null),
+        nodeDataById: Object.create(null)
       };
 
-      if (!window.cytoscape) {
-        fatal("Failed to load Cytoscape from CDN.");
-        return;
-      }
-
-      state.bilkentReady = registerCoseBilkent();
-
       var LAYER_COLORS = {
-        Core: { bg: "#1a2332", border: "#22c55e" },
-        Data: { bg: "#1a1a3a", border: "#8b5cf6" },
-        Hooks: { bg: "#1a2938", border: "#3b82f6" },
-        Styles: { bg: "#2a1a2a", border: "#ec4899" },
-        UI: { bg: "#1a2a2a", border: "#06b6d4" },
-        API: { bg: "#1a1a3a", border: "#8b5cf6" },
-        Pages: { bg: "#1a2a2a", border: "#06b6d4" },
-        Services: { bg: "#1a2332", border: "#22c55e" },
-        State: { bg: "#1a1a3a", border: "#8b5cf6" },
-        Middleware: { bg: "#1a2332", border: "#22c55e" },
-        Config: { bg: "#1e1e2e", border: "#64748b" },
-        Types: { bg: "#1e1e2e", border: "#64748b" },
-        Tests: { bg: "#1e1e2e", border: "#64748b" },
-        Assets: { bg: "#1e1e2e", border: "#64748b" },
-        Other: { bg: "#1e1e2e", border: "#64748b" }
+        Core:       { bg: "#0f2818", border: "#22c55e" },
+        Data:       { bg: "#1a1333", border: "#8b5cf6" },
+        Hooks:      { bg: "#0f1a2e", border: "#3b82f6" },
+        Styles:     { bg: "#2a1328", border: "#ec4899" },
+        UI:         { bg: "#0f2a2a", border: "#06b6d4" },
+        API:        { bg: "#1a1333", border: "#a855f7" },
+        Pages:      { bg: "#1a1333", border: "#8b5cf6" },
+        Services:   { bg: "#0f2818", border: "#22c55e" },
+        State:      { bg: "#1a1333", border: "#8b5cf6" },
+        Middleware: { bg: "#1a1818", border: "#f97316" },
+        Config:     { bg: "#1a1a1a", border: "#64748b" },
+        Types:      { bg: "#1a1a1a", border: "#64748b" },
+        Tests:      { bg: "#1a1a1a", border: "#6b7280" },
+        Assets:     { bg: "#1a1a1a", border: "#64748b" },
+        Other:      { bg: "#1a1a1a", border: "#475569" }
       };
 
       var EDGE_STYLES = {
-        imports: { color: "#64748b", dashed: false },
-        calls: { color: "#3b82f6", dashed: false },
-        exports: { color: "#22c55e", dashed: false },
-        renders: { color: "#a855f7", dashed: false },
-        extends: { color: "#f59e0b", dashed: true },
-        implements: { color: "#f59e0b", dashed: true },
-        type_depends: { color: "#6b7280", dashed: true }
+        imports:      { color: "rgba(100,116,139,0.5)", dashed: false },
+        calls:        { color: "rgba(59,130,246,0.6)",  dashed: false },
+        exports:      { color: "rgba(34,197,94,0.5)",   dashed: false },
+        renders:      { color: "rgba(168,85,247,0.5)",  dashed: false },
+        extends:      { color: "rgba(245,158,11,0.5)",  dashed: true },
+        implements:   { color: "rgba(245,158,11,0.5)",  dashed: true },
+        type_depends: { color: "rgba(107,114,128,0.4)", dashed: true }
       };
 
       var LAYOUT_OPTIONS = {
-        name: "cose-bilkent",
-        quality: "default",
-        animate: false,
-        fit: true,
-        padding: 40,
-        nodeDimensionsIncludeLabels: true,
-        nodeRepulsion: 8000,
-        idealEdgeLength: 80,
-        edgeElasticity: 0.45,
-        gravity: 0.4,
-        gravityRange: 3.8,
-        nestingFactor: 0.1,
-        numIter: 2500,
-        tile: true,
-        tilingPaddingVertical: 20,
-        tilingPaddingHorizontal: 20
-      };
-
-      var COSE_FALLBACK_OPTIONS = {
         name: "cose",
         animate: false,
         fit: true,
-        padding: 30,
-        nodeRepulsion: function() {
-          return 15000;
-        },
-        idealEdgeLength: function() {
-          return 60;
-        },
-        edgeElasticity: function() {
-          return 0.2;
-        },
-        gravity: 1.2,
-        numIter: 3000,
+        padding: 50,
         nodeDimensionsIncludeLabels: true,
-        nestPadding: 20,
-        componentSpacing: 60
+        nodeRepulsion: function() { return 65536; },
+        idealEdgeLength: function() { return 120; },
+        edgeElasticity: function() { return 0.1; },
+        gravity: 0.6,
+        numIter: 2000,
+        nestPadding: 25,
+        componentSpacing: 80,
+        randomize: true
       };
 
-      try {
-        init();
-      } catch (error) {
-        renderInitError(error);
-      }
-      live();
-
-      function registerCoseBilkent() {
-        if (typeof cytoscapeCoseBilkent === "undefined") {
-          return false;
-        }
-
-        try {
-          cytoscape.use(cytoscapeCoseBilkent);
-          return true;
-        } catch (error) {
-          console.error("Failed to register cose-bilkent, falling back to cose:", error);
-          return false;
-        }
-      }
+      init();
+      setupLiveReload();
 
       async function init() {
         try {
-          var res = await fetch("/api/graph", { cache: "no-store" });
-          if (!res.ok) {
-            throw new Error("Unable to load graph file (" + res.status + ")");
+          if (!window.cytoscape) {
+            throw new Error("Cytoscape failed to load.");
           }
 
-          state.graph = await res.json();
-          drawStats(state.graph.snapshot || {});
+          var response = await fetch("/api/graph", { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error("Failed to load graph (" + response.status + ").");
+          }
 
+          state.graph = await response.json();
           var prepared = prepareElements(state.graph);
-          mount(prepared.nodes, prepared.edges);
-          buildLayers();
+          mount(prepared);
+          buildLayerFilter(prepared);
           wireControls();
           wireGraph();
           applyVisibility();
-          layout();
+          runLayout();
+          drawStats(state.graph, prepared);
 
           if (ui.loading) {
             ui.loading.style.display = "none";
@@ -210,190 +480,240 @@ export function getHtmlTemplate(): string {
         }
       }
 
-      function mount(nodes, edges) {
-        state.cy = cytoscape({
-          container: ui.cy,
-          elements: nodes.concat(edges),
-          style: styleSheet(),
-          minZoom: 0.04,
-          maxZoom: 5,
-          wheelSensitivity: 0.14
-        });
-      }
-
       function prepareElements(graph) {
         var rawNodes = (((graph || {}).elements || {}).nodes || []);
         var rawEdges = (((graph || {}).elements || {}).edges || []);
 
-        var nodeDataById = {};
+        var nodeDataById = Object.create(null);
         rawNodes.forEach(function(node) {
-          if (node && node.data && node.data.id) {
-            nodeDataById[node.data.id] = node.data;
+          var data = (node && node.data) || {};
+          if (data.id) {
+            nodeDataById[data.id] = data;
           }
         });
+        state.nodeDataById = nodeDataById;
 
-        var layerCache = {};
+        var layerCache = Object.create(null);
+
         var nodes = rawNodes.map(function(node) {
-          var nextNode = Object.assign({}, node);
+          var out = {};
           var data = Object.assign({}, (node && node.data) || {});
+
+          if (node && node.position) {
+            out.position = node.position;
+          }
+          if (node && node.group) {
+            out.group = node.group;
+          }
+          if (node && node.classes) {
+            out.classes = node.classes;
+          }
+
           var layerName = resolveLayerName(data.id, nodeDataById, layerCache);
           var palette = LAYER_COLORS[layerName] || LAYER_COLORS.Other;
-          data.bgColor = data.bgColor || palette.bg;
-          data.borderColor = data.borderColor || palette.border;
-          data.layerName = data.layerName || layerName;
-          nextNode.data = data;
-          return nextNode;
+
+          data.bgColor = palette.bg;
+          data.borderColor = palette.border;
+          data.layerName = layerName;
+          data.path = data.path || data.file_path || data.id;
+          data.label = data.label || data.id || "(unknown)";
+
+          out.data = data;
+          return out;
         });
 
         var edges = rawEdges.map(function(edge) {
-          var nextEdge = Object.assign({}, edge);
+          var out = {};
           var data = Object.assign({}, (edge && edge.data) || {});
+
+          if (edge && edge.position) {
+            out.position = edge.position;
+          }
+          if (edge && edge.group) {
+            out.group = edge.group;
+          }
+          if (edge && edge.classes) {
+            out.classes = edge.classes;
+          }
+
           var style = EDGE_STYLES[data.type] || EDGE_STYLES.imports;
           var weight = Number(data.weight || 1);
-          data.edgeColor = data.edgeColor || style.color;
-          data.edgeStyle = data.edgeStyle || (style.dashed ? "dashed" : "solid");
-          data.edgeWidth = data.edgeWidth || Math.max(1, Math.min(4, 1 + weight * 0.45));
-          nextEdge.data = data;
-          return nextEdge;
+
+          data.edgeColor = style.color;
+          data.edgeStyle = style.dashed ? "dashed" : "solid";
+          data.edgeWidth = Math.max(1, Math.min(4, 1 + weight * 0.5));
+
+          out.data = data;
+          return out;
         });
 
-        return { nodes: nodes, edges: edges };
+        return {
+          nodes: nodes,
+          edges: edges
+        };
       }
 
-      function resolveLayerName(nodeId, map, cache) {
+      function resolveLayerName(nodeId, nodeDataById, cache) {
         if (!nodeId) {
           return "Other";
         }
+
         if (cache[nodeId]) {
           return cache[nodeId];
         }
 
-        var current = map[nodeId];
-        var hops = 0;
-        while (current && hops < 16) {
-          if (current.type === "layer") {
-            var label = current.label || "Other";
-            cache[nodeId] = label;
-            return label;
+        var currentId = nodeId;
+        var guard = 0;
+        while (currentId && guard < 300) {
+          if (cache[currentId]) {
+            cache[nodeId] = cache[currentId];
+            return cache[currentId];
           }
-          var parentId = current.parent || current.parent_id;
-          if (!parentId) {
+
+          var current = nodeDataById[currentId];
+          if (!current) {
             break;
           }
-          current = map[parentId];
-          hops += 1;
+
+          if (current.type === "layer") {
+            var layerName = current.label || "Other";
+            cache[currentId] = layerName;
+            cache[nodeId] = layerName;
+            return layerName;
+          }
+
+          currentId = current.parent || current.parent_id || null;
+          guard += 1;
         }
 
         cache[nodeId] = "Other";
         return "Other";
       }
 
-      function styleSheet() {
+      function mount(prepared) {
+        state.cy = cytoscape({
+          container: ui.cy,
+          elements: prepared.nodes.concat(prepared.edges),
+          style: getStylesheet(),
+          minZoom: 0.03,
+          maxZoom: 5,
+          wheelSensitivity: 0.16,
+          selectionType: "single"
+        });
+
+        window.cy = state.cy;
+      }
+
+      function getStylesheet() {
         return [
           {
             selector: "node",
             style: {
-              label: "data(label)",
-              "font-family": "\\"IBM Plex Sans\\",\\"Segoe UI\\",sans-serif",
+              "label": "data(label)",
+              "font-family": "'IBM Plex Sans', 'Inter', 'Segoe UI', system-ui, sans-serif",
               "font-size": "10px",
-              color: "#e2e8f0",
-              "text-outline-color": "#0a0e1a",
-              "text-outline-width": 1,
+              "color": "#e2e8f0",
+              "text-outline-color": "#020617",
+              "text-outline-width": 2,
               "background-color": "data(bgColor)",
               "border-color": "data(borderColor)",
               "border-width": 1,
-              shape: "ellipse"
+              "min-zoomed-font-size": 6
             }
           },
           {
             selector: "node[type='layer']",
             style: {
               "background-color": "data(bgColor)",
+              "background-opacity": 0.85,
               "border-color": "data(borderColor)",
-              "border-width": 2,
-              shape: "roundrectangle",
-              label: "data(label)",
-              "font-size": "16px",
+              "border-width": 2.5,
+              "border-opacity": 0.9,
+              "shape": "roundrectangle",
+              "label": "data(label)",
+              "font-size": "18px",
               "font-weight": "bold",
-              color: "#e2e8f0",
+              "color": "data(borderColor)",
               "text-valign": "top",
               "text-halign": "center",
-              "text-margin-y": -8,
-              padding: "30px",
-              "min-width": "120px",
-              "min-height": "80px",
-              "text-outline-color": "#0a0e1a",
-              "text-outline-width": 2
+              "text-margin-y": 10,
+              "padding": "35px",
+              "text-outline-color": "#020617",
+              "text-outline-width": 3
             }
           },
           {
             selector: "node[type='module']",
             style: {
               "background-color": "data(bgColor)",
-              "background-opacity": 0.6,
+              "background-opacity": 0.5,
               "border-color": "data(borderColor)",
               "border-width": 1.5,
-              shape: "roundrectangle",
-              label: "data(label)",
-              "font-size": "12px",
-              color: "#cbd5e1",
+              "border-opacity": 0.6,
+              "shape": "roundrectangle",
+              "label": "data(label)",
+              "font-size": "11px",
+              "font-weight": "600",
+              "color": "data(borderColor)",
               "text-valign": "top",
               "text-halign": "center",
-              "text-margin-y": -6,
-              padding: "20px",
-              "min-width": "80px",
-              "min-height": "50px",
-              "text-outline-color": "#0a0e1a",
-              "text-outline-width": 1.5
+              "text-margin-y": 8,
+              "padding": "20px",
+              "text-outline-color": "#020617",
+              "text-outline-width": 2
             }
           },
           {
             selector: "node[type='file']",
             style: {
-              "background-color": "data(bgColor)",
+              "background-color": "data(borderColor)",
+              "background-opacity": 0.9,
               "border-color": "data(borderColor)",
               "border-width": 1,
-              width: 30,
-              height: 30,
-              shape: "roundrectangle",
-              label: "data(label)",
-              "font-size": "9px",
-              color: "#94a3b8",
+              "width": 28,
+              "height": 28,
+              "shape": "roundrectangle",
+              "label": "data(label)",
+              "font-size": "8px",
+              "color": "#cbd5e1",
               "text-valign": "bottom",
               "text-halign": "center",
-              "text-margin-y": 5,
-              "text-outline-color": "#0a0e1a",
-              "text-outline-width": 1,
-              "text-max-width": "80px",
+              "text-margin-y": 6,
+              "text-outline-color": "#020617",
+              "text-outline-width": 1.5,
+              "text-max-width": "90px",
               "text-wrap": "ellipsis"
             }
           },
           {
             selector: "node[type='symbol']",
             style: {
-              width: 14,
-              height: 14,
-              "background-color": "data(bgColor)",
+              "width": 12,
+              "height": 12,
+              "background-color": "data(borderColor)",
+              "background-opacity": 0.7,
               "border-width": 0,
-              label: "data(label)",
+              "label": "data(label)",
               "font-size": "7px",
-              color: "#64748b",
+              "color": "#64748b",
               "text-valign": "bottom",
               "text-margin-y": 3,
-              display: "none"
+              "text-outline-color": "#020617",
+              "text-outline-width": 1,
+              "display": "none"
             }
           },
           {
             selector: "edge",
             style: {
-              width: "data(edgeWidth)",
+              "width": "data(edgeWidth)",
               "line-color": "data(edgeColor)",
               "target-arrow-color": "data(edgeColor)",
               "line-style": "data(edgeStyle)",
               "target-arrow-shape": "triangle",
               "curve-style": "bezier",
-              "arrow-scale": 0.8,
-              opacity: 0.65
+              "arrow-scale": 0.7,
+              "opacity": 0.6
             }
           },
           {
@@ -401,231 +721,312 @@ export function getHtmlTemplate(): string {
             style: {
               "border-width": 3,
               "border-color": "#38bdf8",
-              "background-opacity": 0.32,
               "overlay-color": "#38bdf8",
-              "overlay-opacity": 0.1
+              "overlay-opacity": 0.08
             }
           },
           {
             selector: "node.highlighted",
             style: {
-              "border-width": 2,
+              "border-width": 2.5,
               "border-color": "#fbbf24",
-              "background-opacity": 0.26
+              "overlay-color": "#fbbf24",
+              "overlay-opacity": 0.06
             }
           },
           {
             selector: "node.dimmed",
-            style: {
-              opacity: 0.2
-            }
+            style: { "opacity": 0.15 }
           },
           {
             selector: "edge.dimmed",
-            style: {
-              opacity: 0.06
-            }
+            style: { "opacity": 0.04 }
           },
           {
             selector: "edge.highlighted",
-            style: {
-              opacity: 1,
-              width: 2.5
-            }
+            style: { "opacity": 1, "width": 2.5 }
           },
           {
             selector: ":parent",
-            style: {
-              "background-clip": "none"
-            }
+            style: { "background-clip": "none" }
           }
         ];
       }
 
-      function layout() {
-        if (!state.cy) {
-          return;
-        }
+      function wireControls() {
+        ui.fit.addEventListener("click", function() {
+          fitGraph();
+        });
 
-        var visible = state.cy.elements(":visible");
-        var target = visible.length ? visible : state.cy.elements();
-        var options = state.bilkentReady ? LAYOUT_OPTIONS : COSE_FALLBACK_OPTIONS;
-        state.cy.layout(Object.assign({}, options, { eles: target })).run();
+        ui.zin.addEventListener("click", function() {
+          zoomBy(1.2);
+        });
+
+        ui.zout.addEventListener("click", function() {
+          zoomBy(1 / 1.2);
+        });
+
+        ui.relayout.addEventListener("click", function() {
+          clearHighlighting();
+          hideDetail();
+          runLayout();
+        });
+
+        ui.symbols.addEventListener("click", function() {
+          state.symbols = !state.symbols;
+          ui.symbols.classList.toggle("active", state.symbols);
+          clearHighlighting();
+          hideDetail();
+          applyVisibility();
+          runLayout();
+        });
+
+        ui.layersbtn.addEventListener("click", function() {
+          state.layersOpen = !state.layersOpen;
+          ui.layersbtn.classList.toggle("active", state.layersOpen);
+          ui.layers.classList.toggle("open", state.layersOpen);
+        });
       }
 
       function wireGraph() {
-        var cy = state.cy;
-
-        cy.on("tap", "node", function(event) {
-          var node = event.target;
-          var neighborhood = node.closedNeighborhood();
-          var visibleNodes = neighborhood.nodes().union(node);
-          var visibleEdges = neighborhood.edges();
-
-          cy.startBatch();
-          cy.elements().removeClass("highlighted").removeClass("dimmed").addClass("dimmed");
-          visibleNodes.removeClass("dimmed").addClass("highlighted");
-          visibleEdges.removeClass("dimmed").addClass("highlighted");
-
-          var parent = node.parent();
-          while (parent && parent.length > 0) {
-            parent.removeClass("dimmed");
-            parent = parent.parent();
-          }
-
-          node.select();
-          cy.endBatch();
-          showDetail(node);
-        });
-
-        cy.on("tap", function(event) {
-          if (event.target !== cy) {
-            return;
-          }
-          clearFocus();
-          hideDetail();
-        });
-      }
-
-      function clearFocus() {
         if (!state.cy) {
           return;
         }
-        state.cy.elements().removeClass("highlighted").removeClass("dimmed");
-        state.cy.$(":selected").unselect();
+
+        state.cy.on("tap", "node", function(event) {
+          var node = event.target;
+          var connectedEdges = node.connectedEdges();
+          var neighbors = connectedEdges.connectedNodes().union(node);
+
+          state.cy.startBatch();
+          state.cy.elements().removeClass("highlighted").removeClass("dimmed");
+          state.cy.$(":selected").unselect();
+
+          node.select();
+          neighbors.addClass("highlighted");
+          connectedEdges.addClass("highlighted");
+
+          state.cy.nodes().not(neighbors).addClass("dimmed");
+          state.cy.edges().not(connectedEdges).addClass("dimmed");
+          state.cy.endBatch();
+
+          showDetail(node);
+        });
+
+        state.cy.on("tap", function(event) {
+          if (event.target !== state.cy) {
+            return;
+          }
+
+          clearHighlighting();
+          hideDetail();
+        });
       }
 
       function showDetail(node) {
         var data = node.data() || {};
-        var parts = [];
-        parts.push('<button class="x" id="close">x</button>');
-        parts.push('<div class="t">' + esc(data.label || node.id()) + "</div>");
-        parts.push('<div class="s">' + esc((data.subtype || data.type || "unknown") + (data.file_path ? " | " + data.file_path : "")) + "</div>");
-        parts.push('<div class="st">Metrics</div>');
+        var layerName = data.layerName || "Other";
+        var palette = LAYER_COLORS[layerName] || LAYER_COLORS.Other;
+        var typeValue = String(data.type || "unknown");
+        var pathValue = data.path || data.id || "(unknown)";
 
-        metric(parts, "Type", String(data.type || "unknown"));
-        if (data.loc != null) {
-          metric(parts, "LOC", String(data.loc));
-        }
-        if (data.complexity != null) {
-          metric(parts, "Complexity", String(data.complexity));
-        }
-        if (data.export_count != null) {
-          metric(parts, "Exports", String(data.export_count));
-        }
-        if (data.import_count != null) {
-          metric(parts, "Imports", String(data.import_count));
-        }
+        var outgoingImports = node.outgoers("edge[type='imports']");
+        var incomingImports = node.incomers("edge[type='imports']");
 
-        var outgoing = node.outgoers("edge");
-        var incoming = node.incomers("edge");
-        if (outgoing.length || incoming.length) {
-          parts.push('<div class="st">Connections</div>');
-          outgoing.forEach(function(edge) {
-            parts.push('<div class="c">-> ' + esc(String(edge.data("type") || "edge")) + " " + esc(String(edge.target().data("label") || edge.target().id())) + "</div>");
-          });
-          incoming.forEach(function(edge) {
-            parts.push('<div class="c"><- ' + esc(String(edge.data("type") || "edge")) + " " + esc(String(edge.source().data("label") || edge.source().id())) + "</div>");
-          });
-        }
+        var html = [];
+        html.push('<button id="detail-close" class="detail-close" title="Close">×</button>');
+        html.push('<div class="detail-title">' + esc(data.label || data.id || "(unknown)") + "</div>");
+        html.push('<div class="detail-path">' + esc(pathValue) + "</div>");
+        html.push('<span class="type-badge" style="border-color:' + esc(palette.border) + ";color:" + esc(palette.border) + ";background:" + esc(withAlpha(palette.border, 0.16)) + ';">' + esc(typeValue) + "</span>");
 
-        if (data.metadata && typeof data.metadata === "object" && Object.keys(data.metadata).length) {
-          parts.push('<div class="st">Metadata</div>');
-          Object.keys(data.metadata).forEach(function(key) {
-            metric(parts, key, val(data.metadata[key]));
+        html.push('<div class="detail-section">');
+        html.push('<div class="detail-section-title">Stats</div>');
+        html.push(detailRow("LOC", valueOrDash(data.loc)));
+        html.push(detailRow("Type", valueOrDash(data.type)));
+        html.push(detailRow("Subtype", valueOrDash(data.subtype)));
+        html.push(detailRow("Layer", valueOrDash(layerName)));
+        html.push("</div>");
+
+        html.push('<div class="detail-section">');
+        html.push('<div class="detail-section-title">Imports</div>');
+        html.push('<div class="conn-list">');
+        if (!outgoingImports.length) {
+          html.push('<div class="conn-item empty">No imports</div>');
+        } else {
+          outgoingImports.forEach(function(edge) {
+            var targetNode = edge.target();
+            var label = targetNode.data("label") || targetNode.id();
+            html.push('<div class="conn-item">→ ' + esc(String(label)) + "</div>");
           });
         }
+        html.push("</div>");
+        html.push("</div>");
 
-        ui.detail.innerHTML = parts.join("");
-        ui.detail.classList.add("show");
-        byId("close").addEventListener("click", function() {
-          clearFocus();
-          hideDetail();
-        });
-      }
+        html.push('<div class="detail-section">');
+        html.push('<div class="detail-section-title">Imported by</div>');
+        html.push('<div class="conn-list">');
+        if (!incomingImports.length) {
+          html.push('<div class="conn-item empty">No incoming imports</div>');
+        } else {
+          incomingImports.forEach(function(edge) {
+            var sourceNode = edge.source();
+            var label = sourceNode.data("label") || sourceNode.id();
+            html.push('<div class="conn-item">← ' + esc(String(label)) + "</div>");
+          });
+        }
+        html.push("</div>");
+        html.push("</div>");
 
-      function metric(parts, key, value) {
-        parts.push('<div class="row"><span class="k">' + esc(key) + '</span><span class="val">' + esc(value) + "</span></div>");
+        ui.detail.innerHTML = html.join("");
+        ui.detail.classList.add("open");
+
+        var closeButton = byId("detail-close");
+        if (closeButton) {
+          closeButton.addEventListener("click", function() {
+            clearHighlighting();
+            hideDetail();
+          });
+        }
       }
 
       function hideDetail() {
-        ui.detail.classList.remove("show");
+        ui.detail.classList.remove("open");
       }
 
-      function buildLayers() {
-        ui.layers.innerHTML = '<div class="lt">Layers</div>';
-        var list = getLayerList();
-        if (!list.length) {
-          ui.layers.innerHTML += '<div class="lr">No layer nodes found</div>';
+      function detailRow(key, value) {
+        return '<div class="detail-row"><span class="detail-key">' + esc(key) + '</span><span class="detail-value">' + esc(value) + "</span></div>";
+      }
+
+      function clearHighlighting() {
+        if (!state.cy) {
           return;
         }
 
-        list.forEach(function(layer) {
-          var color = (LAYER_COLORS[layer.label] || LAYER_COLORS.Other).border;
-          var row = document.createElement("label");
-          row.className = "lr";
+        state.cy.startBatch();
+        state.cy.elements().removeClass("highlighted").removeClass("dimmed");
+        state.cy.$(":selected").unselect();
+        state.cy.endBatch();
+      }
 
-          var checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.checked = true;
-          checkbox.dataset.layerId = layer.id;
+      function buildLayerFilter(prepared) {
+        if (!ui.layers) {
+          return;
+        }
+
+        ui.layers.innerHTML = "";
+        var title = document.createElement("div");
+        title.className = "layers-title";
+        title.textContent = "Layer Filter";
+        ui.layers.appendChild(title);
+
+        var layerList = [];
+        var seen = Object.create(null);
+
+        var snapshotLayers = (((state.graph || {}).snapshot || {}).layer_summary || []);
+        if (Array.isArray(snapshotLayers) && snapshotLayers.length) {
+          snapshotLayers.forEach(function(layer) {
+            if (!layer || !layer.id) {
+              return;
+            }
+            var label = layer.label || "Other";
+            if (seen[layer.id]) {
+              return;
+            }
+            seen[layer.id] = true;
+            layerList.push({ id: String(layer.id), label: String(label) });
+          });
+        }
+
+        if (!layerList.length) {
+          prepared.nodes.forEach(function(node) {
+            var data = (node && node.data) || {};
+            if (data.type !== "layer" || !data.id) {
+              return;
+            }
+            if (seen[data.id]) {
+              return;
+            }
+            seen[data.id] = true;
+            layerList.push({ id: String(data.id), label: String(data.label || "Other") });
+          });
+        }
+
+        layerList.sort(function(a, b) {
+          return a.label.localeCompare(b.label);
+        });
+
+        if (!layerList.length) {
+          var empty = document.createElement("div");
+          empty.className = "conn-item empty";
+          empty.textContent = "No layers found";
+          ui.layers.appendChild(empty);
+          return;
+        }
+
+        layerList.forEach(function(layer) {
+          var row = document.createElement("label");
+          row.className = "layer-row";
+
+          var check = document.createElement("input");
+          check.className = "layer-check";
+          check.type = "checkbox";
+          check.checked = true;
+          check.dataset.layerId = layer.id;
 
           var dot = document.createElement("span");
-          dot.className = "dot";
-          dot.style.backgroundColor = color;
+          dot.className = "layer-dot";
+          dot.style.background = (LAYER_COLORS[layer.label] || LAYER_COLORS.Other).border;
 
           var text = document.createElement("span");
           text.textContent = layer.label;
 
-          row.appendChild(checkbox);
+          row.appendChild(check);
           row.appendChild(dot);
           row.appendChild(text);
           ui.layers.appendChild(row);
 
-          checkbox.addEventListener("change", function() {
-            if (checkbox.checked) {
-              state.hidden.delete(layer.id);
+          check.addEventListener("change", function() {
+            if (check.checked) {
+              delete state.hiddenLayers[layer.id];
             } else {
-              state.hidden.add(layer.id);
+              state.hiddenLayers[layer.id] = true;
             }
-            clearFocus();
+
+            clearHighlighting();
             hideDetail();
             applyVisibility();
-            layout();
+            runLayout();
           });
         });
       }
 
-      function getLayerList() {
-        var graph = state.graph || {};
-        var fromSnapshot = ((graph.snapshot || {}).layer_summary || []).map(function(layer) {
-          return { id: String(layer.id), label: String(layer.label) };
+      function getDescendants(cy, nodeId) {
+        var result = [];
+        var escapedNodeId = String(nodeId).replace(/"/g, "\\\"");
+        var children = cy.nodes('[parent="' + escapedNodeId + '"]');
+        children.forEach(function(child) {
+          result.push(child);
+          var sub = getDescendants(cy, child.id());
+          result = result.concat(sub);
         });
+        return result;
+      }
 
-        if (fromSnapshot.length) {
-          return fromSnapshot.sort(function(a, b) {
-            return a.label.localeCompare(b.label);
-          });
+      function hideLayerById(cy, layerId) {
+        var layerNode = cy.getElementById(layerId);
+        if (layerNode.length) {
+          layerNode.style("display", "none");
         }
-
-        var nodes = ((graph.elements || {}).nodes || []);
-        return nodes
-          .filter(function(node) {
-            return node && node.data && node.data.type === "layer";
-          })
-          .map(function(node) {
-            return { id: String(node.data.id), label: String(node.data.label) };
-          })
-          .sort(function(a, b) {
-            return a.label.localeCompare(b.label);
-          });
+        var desc = getDescendants(cy, layerId);
+        desc.forEach(function(d) { d.style("display", "none"); });
       }
 
       function applyVisibility() {
-        var cy = state.cy;
-        if (!cy) {
+        if (!state.cy) {
           return;
         }
+
+        var cy = state.cy;
 
         cy.startBatch();
         cy.nodes().style("display", "element");
@@ -635,10 +1036,9 @@ export function getHtmlTemplate(): string {
           cy.nodes("[type='symbol']").style("display", "none");
         }
 
-        state.hidden.forEach(function(layerId) {
-          var layerNode = cy.getElementById(layerId);
-          if (layerNode && layerNode.length) {
-            layerNode.union(layerNode.descendants()).style("display", "none");
+        Object.keys(state.hiddenLayers).forEach(function(layerId) {
+          if (state.hiddenLayers[layerId]) {
+            hideLayerById(cy, layerId);
           }
         });
 
@@ -647,94 +1047,175 @@ export function getHtmlTemplate(): string {
           var targetVisible = edge.target().style("display") !== "none";
           edge.style("display", sourceVisible && targetVisible ? "element" : "none");
         });
+
         cy.endBatch();
       }
 
-      function wireControls() {
-        ui.fit.addEventListener("click", function() {
-          var visible = state.cy.elements(":visible");
-          if (visible.length) {
-            state.cy.fit(visible, 40);
-          } else {
-            state.cy.fit(undefined, 40);
-          }
-        });
-
-        ui.zin.addEventListener("click", function() {
-          zoom(1.3);
-        });
-
-        ui.zout.addEventListener("click", function() {
-          zoom(1 / 1.3);
-        });
-
-        ui.relayout.addEventListener("click", function() {
-          clearFocus();
-          hideDetail();
-          layout();
-        });
-
-        ui.symbols.addEventListener("click", function() {
-          state.symbols = !state.symbols;
-          ui.symbols.classList.toggle("on", state.symbols);
-          clearFocus();
-          hideDetail();
-          applyVisibility();
-          layout();
-        });
-
-        ui.layersbtn.addEventListener("click", function() {
-          state.layersOpen = !state.layersOpen;
-          ui.layersbtn.classList.toggle("on", state.layersOpen);
-          ui.layers.classList.toggle("open", state.layersOpen);
-        });
-      }
-
-      function zoom(factor) {
+      function runLayout() {
         if (!state.cy) {
           return;
         }
-        var level = clamp(state.cy.zoom() * factor, state.cy.minZoom(), state.cy.maxZoom());
+
+        var visible = state.cy.elements(":visible");
+        var eles = visible.length ? visible : state.cy.elements();
+        state.cy.layout(Object.assign({}, LAYOUT_OPTIONS, { eles: eles })).run();
+      }
+
+      function fitGraph() {
+        if (!state.cy) {
+          return;
+        }
+
+        var visible = state.cy.elements(":visible");
+        if (visible.length) {
+          state.cy.fit(visible, 50);
+        } else {
+          state.cy.fit(state.cy.elements(), 50);
+        }
+      }
+
+      function zoomBy(factor) {
+        if (!state.cy) {
+          return;
+        }
+
+        var current = state.cy.zoom();
+        var next = clamp(current * factor, state.cy.minZoom(), state.cy.maxZoom());
+
         state.cy.zoom({
-          level: level,
-          renderedPosition: { x: state.cy.width() / 2, y: state.cy.height() / 2 }
+          level: next,
+          renderedPosition: {
+            x: state.cy.width() / 2,
+            y: state.cy.height() / 2
+          }
         });
       }
 
-      function drawStats(snapshot) {
-        var languages = Array.isArray(snapshot.languages) && snapshot.languages.length ? snapshot.languages.join(", ") : "unknown";
-        var ms = snapshot.analysis_duration_ms == null ? "?" : String(snapshot.analysis_duration_ms);
-        ui.stats.innerHTML =
-          '<span class="v">' + num(snapshot.total_files) + "</span> files | " +
-          '<span class="v">' + num(snapshot.total_symbols) + "</span> symbols | " +
-          '<span class="v">' + num(snapshot.total_edges) + "</span> edges | " +
-          '<span class="v">' + num(snapshot.total_loc) + "</span> LOC | " +
-          esc(languages) + " | " +
-          '<span class="v">' + esc(ms) + "</span>ms";
+      function drawStats(graph, prepared) {
+        var snapshot = (graph && graph.snapshot) || {};
+        var nodes = prepared.nodes || [];
+        var edges = prepared.edges || [];
+
+        var fileCount = numberOr(snapshot.total_files, countNodes(nodes, "file"));
+        var symbolCount = numberOr(snapshot.total_symbols, countNodes(nodes, "symbol"));
+        var edgeCount = numberOr(snapshot.total_edges, edges.length);
+        var loc = numberOr(snapshot.total_loc, sumLoc(nodes));
+        var language = getLanguage(snapshot, nodes);
+        var analysisTime = numberOr(snapshot.analysis_duration_ms, 0);
+
+        ui.stats.textContent =
+          formatInt(fileCount) + " files | " +
+          formatInt(symbolCount) + " symbols | " +
+          formatInt(edgeCount) + " edges | " +
+          formatInt(loc) + " LOC | " +
+          language + " | " +
+          formatInt(analysisTime) + "ms";
       }
 
-      function live() {
-        try {
-          var protocol = location.protocol === "https:" ? "wss:" : "ws:";
-          var ws = new WebSocket(protocol + "//" + location.host);
-          ws.onmessage = function(event) {
-            if (event.data === "reload") {
-              location.reload();
-            }
-          };
-          ws.onerror = function() {
-            try {
-              ws.close();
-            } catch (_) {
-              // No-op.
-            }
-          };
-          ws.onclose = function() {
-            setTimeout(live, 2000);
-          };
-        } catch (_) {
-          setTimeout(live, 2000);
+      function countNodes(nodes, type) {
+        var total = 0;
+        nodes.forEach(function(node) {
+          if (((node || {}).data || {}).type === type) {
+            total += 1;
+          }
+        });
+        return total;
+      }
+
+      function sumLoc(nodes) {
+        var total = 0;
+        nodes.forEach(function(node) {
+          var data = (node && node.data) || {};
+          if (data.type === "file") {
+            total += Number(data.loc || 0);
+          }
+        });
+        return total;
+      }
+
+      function getLanguage(snapshot, nodes) {
+        if (snapshot && Array.isArray(snapshot.languages) && snapshot.languages.length) {
+          return snapshot.languages.join(", ");
         }
+
+        var languageSet = Object.create(null);
+        nodes.forEach(function(node) {
+          var metadata = (((node || {}).data || {}).metadata || {});
+          if (metadata.language) {
+            languageSet[String(metadata.language)] = true;
+          }
+        });
+
+        var names = Object.keys(languageSet);
+        if (!names.length) {
+          return "unknown";
+        }
+        return names.join(", ");
+      }
+
+      function numberOr(value, fallback) {
+        var n = Number(value);
+        return Number.isFinite(n) ? n : fallback;
+      }
+
+      function formatInt(value) {
+        return Number(value || 0).toLocaleString();
+      }
+
+      function valueOrDash(value) {
+        if (value === null || value === undefined || value === "") {
+          return "-";
+        }
+        return String(value);
+      }
+
+      function withAlpha(color, alpha) {
+        var safeAlpha = clamp(Number(alpha), 0, 1);
+        var hex = String(color || "").replace("#", "");
+        if (hex.length !== 6) {
+          return "rgba(56, 189, 248, " + safeAlpha + ")";
+        }
+
+        var r = parseInt(hex.slice(0, 2), 16);
+        var g = parseInt(hex.slice(2, 4), 16);
+        var b = parseInt(hex.slice(4, 6), 16);
+
+        if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) {
+          return "rgba(56, 189, 248, " + safeAlpha + ")";
+        }
+
+        return "rgba(" + r + "," + g + "," + b + "," + safeAlpha + ")";
+      }
+
+      function setupLiveReload() {
+        function connect() {
+          try {
+            var protocol = location.protocol === "https:" ? "wss://" : "ws://";
+            var ws = new WebSocket(protocol + location.host);
+
+            ws.onmessage = function(event) {
+              if (event.data === "reload") {
+                location.reload();
+              }
+            };
+
+            ws.onclose = function() {
+              setTimeout(connect, 2000);
+            };
+
+            ws.onerror = function() {
+              try {
+                ws.close();
+              } catch (_error) {
+                // ignore close errors
+              }
+            };
+          } catch (_error) {
+            setTimeout(connect, 2000);
+          }
+        }
+
+        connect();
       }
 
       function renderInitError(error) {
@@ -742,55 +1223,12 @@ export function getHtmlTemplate(): string {
           ui.loading.style.display = "none";
         }
 
-        var graphEl = byId("cy");
         var message = error && error.message ? error.message : String(error);
-        if (graphEl) {
-          graphEl.innerHTML =
-            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f87171;font-size:14px;padding:20px;text-align:center;">' +
-            "Failed to load graph: " +
-            esc(message) +
-            "</div>";
-        } else {
-          fatal("Failed to load graph: " + message);
-        }
-        console.error("Rekkon visualizer error:", error);
-      }
-
-      function fatal(message) {
-        var loading = ui && ui.loading ? ui.loading : byId("loading");
-        if (loading) {
-          loading.style.display = "none";
+        if (ui.cy) {
+          ui.cy.innerHTML = '<div class="error-message">' + esc(message) + "</div>";
         }
 
-        var main = ui && ui.main ? ui.main : byId("main");
-        if (!main) {
-          console.error(message);
-          return;
-        }
-
-        var node = document.createElement("div");
-        node.className = "e";
-        node.textContent = message;
-        main.appendChild(node);
-      }
-
-      function val(value) {
-        if (value == null) {
-          return "";
-        }
-        if (typeof value === "string") {
-          return value;
-        }
-        try {
-          return JSON.stringify(value);
-        } catch (_) {
-          return String(value);
-        }
-      }
-
-      function num(value) {
-        var parsed = Number(value);
-        return isFinite(parsed) ? parsed.toLocaleString() : "0";
+        console.error("Visualizer init error:", error);
       }
 
       function byId(id) {
