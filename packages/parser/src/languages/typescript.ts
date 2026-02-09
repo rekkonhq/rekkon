@@ -82,61 +82,121 @@ function extractImports(root: Parser.SyntaxNode): ExtractedImport[] {
   const imports: ExtractedImport[] = [];
 
   for (const node of root.children) {
-    if (node.type !== 'import_statement') {
+    if (node.type === 'import_statement') {
+      const extractedImport = extractImportStatement(node);
+      if (extractedImport) {
+        imports.push(extractedImport);
+      }
       continue;
     }
 
-    const sourceNode = node.childForFieldName('source');
-    if (!sourceNode) {
-      continue;
-    }
-
-    const specifiers: string[] = [];
-    for (const child of node.children) {
-      if (child.type !== 'import_clause') {
-        continue;
-      }
-
-      for (const clauseChild of child.children) {
-        if (clauseChild.type === 'identifier') {
-          specifiers.push(clauseChild.text);
-          continue;
-        }
-
-        if (clauseChild.type === 'named_imports') {
-          for (const namedImport of clauseChild.children) {
-            if (namedImport.type !== 'import_specifier') {
-              continue;
-            }
-            const name = namedImport.childForFieldName('name');
-            const alias = namedImport.childForFieldName('alias');
-            const resolved = alias?.text ?? name?.text ?? namedImport.text;
-            if (resolved) {
-              specifiers.push(resolved);
-            }
-          }
-          continue;
-        }
-
-        if (clauseChild.type === 'namespace_import') {
-          const namespaceIdentifier = clauseChild.children.find(
-            (namespaceChild) => namespaceChild.type === 'identifier',
-          );
-          if (namespaceIdentifier) {
-            specifiers.push(namespaceIdentifier.text);
-          }
-        }
+    if (node.type === 'export_statement') {
+      const extractedReExport = extractReExportStatement(node);
+      if (extractedReExport) {
+        imports.push(extractedReExport);
       }
     }
-
-    imports.push({
-      source: stripQuotes(sourceNode.text),
-      specifiers,
-      line: node.startPosition.row + 1,
-    });
   }
 
   return imports;
+}
+
+function extractImportStatement(node: Parser.SyntaxNode): ExtractedImport | null {
+  const sourceNode = node.childForFieldName('source');
+  if (!sourceNode) {
+    return null;
+  }
+
+  const specifiers: string[] = [];
+  for (const child of node.children) {
+    if (child.type !== 'import_clause') {
+      continue;
+    }
+
+    for (const clauseChild of child.children) {
+      if (clauseChild.type === 'identifier') {
+        specifiers.push(clauseChild.text);
+        continue;
+      }
+
+      if (clauseChild.type === 'named_imports') {
+        for (const namedImport of clauseChild.children) {
+          if (namedImport.type !== 'import_specifier') {
+            continue;
+          }
+          const name = namedImport.childForFieldName('name');
+          const alias = namedImport.childForFieldName('alias');
+          const resolved = alias?.text ?? name?.text ?? namedImport.text;
+          if (resolved) {
+            specifiers.push(resolved);
+          }
+        }
+        continue;
+      }
+
+      if (clauseChild.type === 'namespace_import') {
+        const namespaceIdentifier = clauseChild.children.find(
+          (namespaceChild) => namespaceChild.type === 'identifier',
+        );
+        if (namespaceIdentifier) {
+          specifiers.push(namespaceIdentifier.text);
+        }
+      }
+    }
+  }
+
+  return {
+    source: stripQuotes(sourceNode.text),
+    specifiers,
+    line: node.startPosition.row + 1,
+  };
+}
+
+function extractReExportStatement(node: Parser.SyntaxNode): ExtractedImport | null {
+  const sourceNode = node.childForFieldName('source');
+  if (!sourceNode) {
+    return null;
+  }
+
+  const specifiers: string[] = [];
+
+  const exportClause = node.children.find((child) => child.type === 'export_clause');
+  if (exportClause) {
+    for (const specifier of exportClause.children) {
+      if (specifier.type !== 'export_specifier') {
+        continue;
+      }
+      const name = specifier.childForFieldName('name');
+      const alias = specifier.childForFieldName('alias');
+      const resolved = alias?.text ?? name?.text ?? specifier.text;
+      if (resolved) {
+        specifiers.push(resolved);
+      }
+    }
+  }
+
+  const namespaceExport = node.children.find((child) => child.type === 'namespace_export');
+  if (namespaceExport) {
+    const namespaceIdentifier = namespaceExport.children.find(
+      (namespaceChild) => namespaceChild.type === 'identifier',
+    );
+    if (namespaceIdentifier) {
+      specifiers.push(namespaceIdentifier.text);
+    }
+  }
+
+  if (
+    specifiers.length === 0 &&
+    node.children.some((child) => child.type === '*' || child.text === '*')
+  ) {
+    specifiers.push('*');
+  }
+
+  return {
+    source: stripQuotes(sourceNode.text),
+    specifiers,
+    line: node.startPosition.row + 1,
+  };
 }
 
 function extractExports(root: Parser.SyntaxNode): {

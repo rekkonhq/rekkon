@@ -82,6 +82,13 @@ export function buildGraph(options: BuildGraphOptions): RekkonGraph {
     const fileId = generateNodeId('file', root, file.relativePath);
     const fileSubtype = classifyFileSubtype(file.relativePath, file.hasDefaultExport);
     const symbolCount = options.extractSymbols ? file.symbols.length : 0;
+    const importCount = file.imports.length;
+    const exportedRuntimeSymbolCount = file.symbols.reduce(
+      (count, symbol) =>
+        count + Number(symbol.isExported && symbol.subtype !== 'interface' && symbol.subtype !== 'type-alias'),
+      0,
+    );
+    const exportCount = exportedRuntimeSymbolCount > 0 ? exportedRuntimeSymbolCount : file.exports.length;
     const fileNode: CytoscapeNode = {
       data: {
         id: fileId,
@@ -93,9 +100,9 @@ export function buildGraph(options: BuildGraphOptions): RekkonGraph {
         file_path: file.relativePath,
         loc: file.loc,
         complexity: estimateComplexity(file.loc, symbolCount),
-        export_count: file.exports.length,
-        import_count: file.imports.length,
-        is_exported: file.exports.length > 0,
+        export_count: exportCount,
+        import_count: importCount,
+        is_exported: exportCount > 0,
         metadata: {
           language: file.language,
         },
