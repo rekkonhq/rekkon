@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 **/.turbo/
 .archviz/
 **/.archviz/
+packages/cli/src/server/fcose-bundle.js

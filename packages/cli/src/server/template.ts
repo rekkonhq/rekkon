@@ -1,3 +1,28 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const fcoseBundle = loadFcoseBundle();
+
+function loadFcoseBundle(): string {
+  const candidates = [
+    join(__dirname, 'fcose-bundle.js'),
+    join(__dirname, '../../../src/server/fcose-bundle.js'),
+  ];
+
+  for (const candidate of candidates) {
+    if (!existsSync(candidate)) {
+      continue;
+    }
+
+    const source = readFileSync(candidate, 'utf-8');
+    return source.replace(/<\/script/gi, '<\\/script');
+  }
+
+  return '';
+}
+
 export function getHtmlTemplate(): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -18,7 +43,7 @@ export function getHtmlTemplate(): string {
     #cy{width:100%;height:100%}
     #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px}
     #controls{position:absolute;left:12px;top:12px;z-index:20;display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
-    .b{width:34px;height:34px;border-radius:8px;border:1px solid var(--line2);background:#111827;color:var(--txt);cursor:pointer;font-size:15px}
+    .b{width:34px;height:34px;border-radius:8px;border:1px solid var(--line2);background:#111827;color:var(--txt);cursor:pointer;font-size:12px;font-weight:700}
     .b:hover{background:#1f2937}
     .b.on{border-color:var(--accent);background:#0f2944;color:#bae6fd}
     #layers{display:none;position:absolute;left:72px;top:14px;z-index:30;min-width:220px;max-height:50vh;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
@@ -44,293 +69,782 @@ export function getHtmlTemplate(): string {
 </head>
 <body>
   <div id="app">
-    <div id="top"><span id="logo">rekkon</span><div id="stats">Loading graph…</div></div>
+    <div id="top"><span id="logo">rekkon</span><div id="stats">Loading graph...</div></div>
     <div id="main">
       <div id="controls">
-        <button class="b" id="fit" title="Fit">⊡</button>
+        <button class="b" id="fit" title="Fit view">FIT</button>
         <button class="b" id="zin" title="Zoom in">+</button>
-        <button class="b" id="zout" title="Zoom out">−</button>
-        <button class="b" id="relayout" title="Re-layout">↻</button>
-        <button class="b" id="symbols" title="Toggle symbols">Σ</button>
-        <button class="b" id="layersbtn" title="Filter layers">▤</button>
+        <button class="b" id="zout" title="Zoom out">-</button>
+        <button class="b" id="relayout" title="Re-layout">LAY</button>
+        <button class="b" id="symbols" title="Toggle symbols">SYM</button>
+        <button class="b" id="layersbtn" title="Filter layers">LYR</button>
       </div>
       <div id="layers"></div>
       <div id="cy"></div>
-      <div id="loading">Loading architecture graph…</div>
+      <div id="loading">Loading architecture graph...</div>
       <div id="detail"></div>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.4/cytoscape.min.js"></script>
+  <script>${fcoseBundle}</script>
   <script>
     (function() {
       var ui = {
-        stats: byId("stats"), loading: byId("loading"), main: byId("main"), detail: byId("detail"), layers: byId("layers"),
-        fit: byId("fit"), zin: byId("zin"), zout: byId("zout"), relayout: byId("relayout"), symbols: byId("symbols"), layersbtn: byId("layersbtn"), cy: byId("cy")
+        stats: byId("stats"),
+        loading: byId("loading"),
+        main: byId("main"),
+        detail: byId("detail"),
+        layers: byId("layers"),
+        fit: byId("fit"),
+        zin: byId("zin"),
+        zout: byId("zout"),
+        relayout: byId("relayout"),
+        symbols: byId("symbols"),
+        layersbtn: byId("layersbtn"),
+        cy: byId("cy")
       };
-      var state = { cy: null, graph: null, symbols: false, hidden: new Set(), layersOpen: false };
 
-      if (!window.cytoscape) { fatal("Failed to load Cytoscape from CDN."); return; }
+      var state = {
+        cy: null,
+        graph: null,
+        symbols: false,
+        hidden: new Set(),
+        layersOpen: false,
+        fcoseReady: false
+      };
 
-      var LAYERS = {API:{bg:"#1e3a5f",border:"#3b82f6",text:"#93c5fd"},Pages:{bg:"#1e3a5f",border:"#3b82f6",text:"#93c5fd"},UI:{bg:"#2d1b4e",border:"#8b5cf6",text:"#c4b5fd"},Hooks:{bg:"#1b2e4a",border:"#06b6d4",text:"#67e8f9"},Core:{bg:"#1a3329",border:"#22c55e",text:"#86efac"},Services:{bg:"#2a1f0f",border:"#f59e0b",text:"#fcd34d"},State:{bg:"#2d1b4e",border:"#a855f7",text:"#d8b4fe"},Data:{bg:"#1a2332",border:"#6366f1",text:"#a5b4fc"},Config:{bg:"#1f1f1f",border:"#6b7280",text:"#9ca3af"},Types:{bg:"#1f2937",border:"#6b7280",text:"#9ca3af"},Tests:{bg:"#1c1917",border:"#78716c",text:"#a8a29e"},Middleware:{bg:"#2a1f0f",border:"#f59e0b",text:"#fcd34d"},Styles:{bg:"#2d1b33",border:"#ec4899",text:"#f9a8d4"},Assets:{bg:"#1f2937",border:"#6b7280",text:"#9ca3af"},Other:{bg:"#1f2937",border:"#6b7280",text:"#9ca3af"}};
-      var EDGES = {imports:{color:"#64748b",d:false},calls:{color:"#3b82f6",d:false},exports:{color:"#22c55e",d:false},renders:{color:"#a855f7",d:false},extends:{color:"#f59e0b",d:true},implements:{color:"#f59e0b",d:true},type_depends:{color:"#6b7280",d:true}};
-      var SHAPES = {component:"round-rectangle",page:"round-rectangle",hook:"diamond",function:"ellipse",class:"hexagon",interface:"pentagon","type-alias":"pentagon",constant:"round-rectangle",variable:"round-rectangle",utility:"round-rectangle",config:"round-rectangle",route:"tag",test:"round-rectangle",style:"round-rectangle",enum:"octagon","type-definition":"pentagon",default:"ellipse"};
-      try { init(); } catch (e) { renderInitError(e); }
+      if (!window.cytoscape) {
+        fatal("Failed to load Cytoscape from CDN.");
+        return;
+      }
+
+      state.fcoseReady = registerFcose();
+
+      var LAYER_COLORS = {
+        Core: { bg: "#1a2332", border: "#22c55e" },
+        Data: { bg: "#1a1a3a", border: "#8b5cf6" },
+        Hooks: { bg: "#1a2938", border: "#3b82f6" },
+        Styles: { bg: "#2a1a2a", border: "#ec4899" },
+        UI: { bg: "#1a2a2a", border: "#06b6d4" },
+        API: { bg: "#1a1a3a", border: "#8b5cf6" },
+        Pages: { bg: "#1a2a2a", border: "#06b6d4" },
+        Services: { bg: "#1a2332", border: "#22c55e" },
+        State: { bg: "#1a1a3a", border: "#8b5cf6" },
+        Middleware: { bg: "#1a2332", border: "#22c55e" },
+        Config: { bg: "#1e1e2e", border: "#64748b" },
+        Types: { bg: "#1e1e2e", border: "#64748b" },
+        Tests: { bg: "#1e1e2e", border: "#64748b" },
+        Assets: { bg: "#1e1e2e", border: "#64748b" },
+        Other: { bg: "#1e1e2e", border: "#64748b" }
+      };
+
+      var EDGE_STYLES = {
+        imports: { color: "#64748b", dashed: false },
+        calls: { color: "#3b82f6", dashed: false },
+        exports: { color: "#22c55e", dashed: false },
+        renders: { color: "#a855f7", dashed: false },
+        extends: { color: "#f59e0b", dashed: true },
+        implements: { color: "#f59e0b", dashed: true },
+        type_depends: { color: "#6b7280", dashed: true }
+      };
+
+      var LAYOUT_OPTIONS = {
+        name: "fcose",
+        quality: "default",
+        animate: false,
+        fit: true,
+        padding: 40,
+        nodeDimensionsIncludeLabels: true,
+        uniformNodeDimensions: false,
+        packComponents: true,
+        nodeRepulsion: function(node) {
+          return node.isParent() ? 12000 : 4500;
+        },
+        idealEdgeLength: function() {
+          return 80;
+        },
+        edgeElasticity: function() {
+          return 0.45;
+        },
+        gravity: 0.4,
+        gravityRange: 3.8,
+        gravityCompound: 1.5,
+        gravityOverlapCompound: 2.0,
+        nestingFactor: 0.1,
+        numIter: 2500,
+        tile: true,
+        tilingPaddingVertical: 20,
+        tilingPaddingHorizontal: 20
+      };
+
+      var COSE_FALLBACK_OPTIONS = {
+        name: "cose",
+        animate: false,
+        fit: true,
+        padding: 30,
+        nodeRepulsion: function() {
+          return 15000;
+        },
+        idealEdgeLength: function() {
+          return 60;
+        },
+        edgeElasticity: function() {
+          return 0.2;
+        },
+        gravity: 1.2,
+        numIter: 3000,
+        nodeDimensionsIncludeLabels: true,
+        nestPadding: 20,
+        componentSpacing: 60
+      };
+
+      try {
+        init();
+      } catch (error) {
+        renderInitError(error);
+      }
       live();
+
+      function registerFcose() {
+        var plugin = window.cytoscapeFcose;
+        if (!plugin) {
+          return false;
+        }
+
+        try {
+          window.cytoscape.use(plugin.default || plugin);
+          return true;
+        } catch (error) {
+          console.error("Failed to register fcose plugin, falling back to cose:", error);
+          return false;
+        }
+      }
 
       async function init() {
         try {
           var res = await fetch("/api/graph", { cache: "no-store" });
-          if (!res.ok) throw new Error("Unable to load graph file (" + res.status + ")");
+          if (!res.ok) {
+            throw new Error("Unable to load graph file (" + res.status + ")");
+          }
+
           state.graph = await res.json();
           drawStats(state.graph.snapshot || {});
-          mount();
+
+          var prepared = prepareElements(state.graph);
+          mount(prepared.nodes, prepared.edges);
           buildLayers();
           wireControls();
           wireGraph();
           applyVisibility();
           layout();
-          if (ui.loading) ui.loading.style.display = "none";
-        } catch (e) {
-          renderInitError(e);
+
+          if (ui.loading) {
+            ui.loading.style.display = "none";
+          }
+        } catch (error) {
+          renderInitError(error);
         }
       }
 
-      function mount() {
-        var nodes = ((state.graph || {}).elements || {}).nodes || [];
-        var edges = ((state.graph || {}).elements || {}).edges || [];
-        state.cy = cytoscape({ container: ui.cy, elements: nodes.concat(edges), style: styleSheet(), minZoom: 0.005, maxZoom: 5 });
-        colorize(nodes);
+      function mount(nodes, edges) {
+        state.cy = cytoscape({
+          container: ui.cy,
+          elements: nodes.concat(edges),
+          style: styleSheet(),
+          minZoom: 0.04,
+          maxZoom: 5,
+          wheelSensitivity: 0.14
+        });
+      }
+
+      function prepareElements(graph) {
+        var rawNodes = (((graph || {}).elements || {}).nodes || []);
+        var rawEdges = (((graph || {}).elements || {}).edges || []);
+
+        var nodeDataById = {};
+        rawNodes.forEach(function(node) {
+          if (node && node.data && node.data.id) {
+            nodeDataById[node.data.id] = node.data;
+          }
+        });
+
+        var layerCache = {};
+        var nodes = rawNodes.map(function(node) {
+          var nextNode = Object.assign({}, node);
+          var data = Object.assign({}, (node && node.data) || {});
+          var layerName = resolveLayerName(data.id, nodeDataById, layerCache);
+          var palette = LAYER_COLORS[layerName] || LAYER_COLORS.Other;
+          data.bgColor = data.bgColor || palette.bg;
+          data.borderColor = data.borderColor || palette.border;
+          data.layerName = data.layerName || layerName;
+          nextNode.data = data;
+          return nextNode;
+        });
+
+        var edges = rawEdges.map(function(edge) {
+          var nextEdge = Object.assign({}, edge);
+          var data = Object.assign({}, (edge && edge.data) || {});
+          var style = EDGE_STYLES[data.type] || EDGE_STYLES.imports;
+          var weight = Number(data.weight || 1);
+          data.edgeColor = data.edgeColor || style.color;
+          data.edgeStyle = data.edgeStyle || (style.dashed ? "dashed" : "solid");
+          data.edgeWidth = data.edgeWidth || Math.max(1, Math.min(4, 1 + weight * 0.45));
+          nextEdge.data = data;
+          return nextEdge;
+        });
+
+        return { nodes: nodes, edges: edges };
+      }
+
+      function resolveLayerName(nodeId, map, cache) {
+        if (!nodeId) {
+          return "Other";
+        }
+        if (cache[nodeId]) {
+          return cache[nodeId];
+        }
+
+        var current = map[nodeId];
+        var hops = 0;
+        while (current && hops < 16) {
+          if (current.type === "layer") {
+            var label = current.label || "Other";
+            cache[nodeId] = label;
+            return label;
+          }
+          var parentId = current.parent || current.parent_id;
+          if (!parentId) {
+            break;
+          }
+          current = map[parentId];
+          hops += 1;
+        }
+
+        cache[nodeId] = "Other";
+        return "Other";
       }
 
       function styleSheet() {
         return [
-          { selector:"node", style:{label:"data(label)","text-valign":"center","text-halign":"center","font-size":"10px","font-family":"\\"IBM Plex Sans\\",\\"Segoe UI\\",sans-serif",color:"#e2e8f0","text-outline-color":"#0f172a","text-outline-width":1,"background-color":"#334155","border-width":1,"border-color":"#475569"} },
-          { selector:"node[type='layer']", style:{shape:"round-rectangle","background-opacity":0.15,"border-width":2,"border-opacity":0.7,"text-valign":"top","text-halign":"center","font-size":"14px","font-weight":"bold",padding:"22px","text-margin-y":10} },
-          { selector:"node[type='module']", style:{shape:"round-rectangle","background-opacity":0.1,"border-width":1.5,"border-opacity":0.5,"text-valign":"top","text-halign":"center","font-size":"11px","font-weight":600,padding:"16px","text-margin-y":8} },
-          { selector:"node[type='file']", style:{width:35,height:35,"font-size":"8px","text-max-width":"92px","text-wrap":"ellipsis"} },
-          { selector:"node[type='symbol']", style:{width:18,height:18,"font-size":"7px","background-opacity":0.85,"text-max-width":"64px","text-wrap":"ellipsis"} },
-          { selector:"edge", style:{width:1.5,"line-color":"#475569","target-arrow-color":"#475569","target-arrow-shape":"triangle","curve-style":"bezier","arrow-scale":0.8,opacity:0.65} },
-          { selector:"node:selected", style:{"border-width":3,"border-color":"#38bdf8","background-opacity":0.32,"overlay-color":"#38bdf8","overlay-opacity":0.1} },
-          { selector:"node.highlighted", style:{"border-width":2,"border-color":"#fbbf24","background-opacity":0.26} },
-          { selector:"node.dimmed", style:{opacity:0.2} },
-          { selector:"edge.dimmed", style:{opacity:0.06} },
-          { selector:"edge.highlighted", style:{opacity:1,width:2.5} },
-          { selector:":parent", style:{"background-clip":"none"} }
+          {
+            selector: "node",
+            style: {
+              label: "data(label)",
+              "font-family": "\\"IBM Plex Sans\\",\\"Segoe UI\\",sans-serif",
+              "font-size": "10px",
+              color: "#e2e8f0",
+              "text-outline-color": "#0a0e1a",
+              "text-outline-width": 1,
+              "background-color": "data(bgColor)",
+              "border-color": "data(borderColor)",
+              "border-width": 1,
+              shape: "ellipse"
+            }
+          },
+          {
+            selector: "node[type='layer']",
+            style: {
+              "background-color": "data(bgColor)",
+              "border-color": "data(borderColor)",
+              "border-width": 2,
+              shape: "roundrectangle",
+              label: "data(label)",
+              "font-size": "16px",
+              "font-weight": "bold",
+              color: "#e2e8f0",
+              "text-valign": "top",
+              "text-halign": "center",
+              "text-margin-y": -8,
+              padding: "30px",
+              "min-width": "120px",
+              "min-height": "80px",
+              "text-outline-color": "#0a0e1a",
+              "text-outline-width": 2
+            }
+          },
+          {
+            selector: "node[type='module']",
+            style: {
+              "background-color": "data(bgColor)",
+              "background-opacity": 0.6,
+              "border-color": "data(borderColor)",
+              "border-width": 1.5,
+              shape: "roundrectangle",
+              label: "data(label)",
+              "font-size": "12px",
+              color: "#cbd5e1",
+              "text-valign": "top",
+              "text-halign": "center",
+              "text-margin-y": -6,
+              padding: "20px",
+              "min-width": "80px",
+              "min-height": "50px",
+              "text-outline-color": "#0a0e1a",
+              "text-outline-width": 1.5
+            }
+          },
+          {
+            selector: "node[type='file']",
+            style: {
+              "background-color": "data(bgColor)",
+              "border-color": "data(borderColor)",
+              "border-width": 1,
+              width: 30,
+              height: 30,
+              shape: "roundrectangle",
+              label: "data(label)",
+              "font-size": "9px",
+              color: "#94a3b8",
+              "text-valign": "bottom",
+              "text-halign": "center",
+              "text-margin-y": 5,
+              "text-outline-color": "#0a0e1a",
+              "text-outline-width": 1,
+              "text-max-width": "80px",
+              "text-wrap": "ellipsis"
+            }
+          },
+          {
+            selector: "node[type='symbol']",
+            style: {
+              width: 14,
+              height: 14,
+              "background-color": "data(bgColor)",
+              "border-width": 0,
+              label: "data(label)",
+              "font-size": "7px",
+              color: "#64748b",
+              "text-valign": "bottom",
+              "text-margin-y": 3,
+              display: "none"
+            }
+          },
+          {
+            selector: "edge",
+            style: {
+              width: "data(edgeWidth)",
+              "line-color": "data(edgeColor)",
+              "target-arrow-color": "data(edgeColor)",
+              "line-style": "data(edgeStyle)",
+              "target-arrow-shape": "triangle",
+              "curve-style": "bezier",
+              "arrow-scale": 0.8,
+              opacity: 0.65
+            }
+          },
+          {
+            selector: "node:selected",
+            style: {
+              "border-width": 3,
+              "border-color": "#38bdf8",
+              "background-opacity": 0.32,
+              "overlay-color": "#38bdf8",
+              "overlay-opacity": 0.1
+            }
+          },
+          {
+            selector: "node.highlighted",
+            style: {
+              "border-width": 2,
+              "border-color": "#fbbf24",
+              "background-opacity": 0.26
+            }
+          },
+          {
+            selector: "node.dimmed",
+            style: {
+              opacity: 0.2
+            }
+          },
+          {
+            selector: "edge.dimmed",
+            style: {
+              opacity: 0.06
+            }
+          },
+          {
+            selector: "edge.highlighted",
+            style: {
+              opacity: 1,
+              width: 2.5
+            }
+          },
+          {
+            selector: ":parent",
+            style: {
+              "background-clip": "none"
+            }
+          }
         ];
       }
 
-      function colorize(nodes) {
-        var cy = state.cy;
-        var map = {};
-        nodes.forEach(function(n){ if (n && n.data && n.data.id) map[n.data.id] = n.data; });
-        cy.nodes().forEach(function(node) {
-          var d = node.data() || {};
-          var type = d.type || "file";
-          var subtype = d.subtype || "default";
-          var layer = findLayer(d.id, map);
-          var c = LAYERS[layer] || LAYERS.Other;
-          var loc = Number(d.loc || 0);
-          var fileSize = Math.max(30, Math.min(64, 30 + Math.round(Math.sqrt(Math.max(loc, 1)) * 2)));
-          var size = type === "file" ? fileSize : type === "symbol" ? 20 : type === "module" ? 60 : 80;
-          node.style({
-            shape: type === "layer" || type === "module" ? "round-rectangle" : (SHAPES[subtype] || SHAPES.default),
-            width: size, height: size,
-            "background-color": (type === "layer" || type === "module") ? c.bg : c.border,
-            "background-opacity": type === "symbol" ? 0.85 : 1,
-            "border-color": c.border, color: (type === "layer" || type === "module") ? c.text : "#f8fafc"
-          });
-        });
-        cy.edges().forEach(function(edge) {
-          var t = edge.data("type") || "imports";
-          var w = Number(edge.data("weight") || 1);
-          var s = EDGES[t] || EDGES.imports;
-          edge.style({ width: Math.max(1, Math.min(4, 1 + w * 0.45)), "line-color": s.color, "target-arrow-color": s.color, "line-style": s.d ? "dashed" : "solid" });
-        });
-      }
-
-      function findLayer(nodeId, map) {
-        var cur = map[nodeId];
-        var hops = 0;
-        while (cur && hops < 12) {
-          if (cur.type === "layer") return cur.label || "Other";
-          var p = cur.parent || cur.parent_id;
-          if (!p) break;
-          cur = map[p];
-          hops += 1;
-        }
-        return "Other";
-      }
-
       function layout() {
-        if (!state.cy) return;
+        if (!state.cy) {
+          return;
+        }
+
         var visible = state.cy.elements(":visible");
         var target = visible.length ? visible : state.cy.elements();
-        target.layout({
-          name:"cose",
-          animate:false,
-          fit:false,
-          padding:50,
-          componentSpacing: 120,
-          boundingBox:{ x1:0, y1:0, w:Math.max(1, state.cy.width()), h:Math.max(1, state.cy.height()) },
-          nodeRepulsion:function(){ return 5000; },
-          idealEdgeLength:function(){ return 90; },
-          edgeElasticity:function(){ return 0.45; },
-          gravity:0.25,
-          numIter:1000,
-          nodeDimensionsIncludeLabels:true
-        }).run();
-        var fitTarget = state.cy.elements(":visible");
-        if (fitTarget.length) state.cy.fit(fitTarget, 50);
+        var options = state.fcoseReady ? LAYOUT_OPTIONS : COSE_FALLBACK_OPTIONS;
+        state.cy.layout(Object.assign({}, options, { eles: target })).run();
       }
 
       function wireGraph() {
         var cy = state.cy;
-        cy.on("tap", "node", function(ev) {
-          var node = ev.target;
-          var hood = node.closedNeighborhood();
-          var ns = hood.nodes().union(node);
-          var es = hood.edges();
+
+        cy.on("tap", "node", function(event) {
+          var node = event.target;
+          var neighborhood = node.closedNeighborhood();
+          var visibleNodes = neighborhood.nodes().union(node);
+          var visibleEdges = neighborhood.edges();
+
           cy.startBatch();
           cy.elements().removeClass("highlighted").removeClass("dimmed").addClass("dimmed");
-          ns.removeClass("dimmed").addClass("highlighted");
-          es.removeClass("dimmed").addClass("highlighted");
-          var p = node.parent(); while (p && p.length > 0) { p.removeClass("dimmed"); p = p.parent(); }
+          visibleNodes.removeClass("dimmed").addClass("highlighted");
+          visibleEdges.removeClass("dimmed").addClass("highlighted");
+
+          var parent = node.parent();
+          while (parent && parent.length > 0) {
+            parent.removeClass("dimmed");
+            parent = parent.parent();
+          }
+
           node.select();
           cy.endBatch();
           showDetail(node);
         });
-        cy.on("tap", function(ev){ if (ev.target !== cy) return; clearFocus(); hideDetail(); });
+
+        cy.on("tap", function(event) {
+          if (event.target !== cy) {
+            return;
+          }
+          clearFocus();
+          hideDetail();
+        });
       }
 
       function clearFocus() {
-        if (!state.cy) return;
+        if (!state.cy) {
+          return;
+        }
         state.cy.elements().removeClass("highlighted").removeClass("dimmed");
         state.cy.$(":selected").unselect();
       }
 
       function showDetail(node) {
-        var d = node.data() || {};
+        var data = node.data() || {};
         var parts = [];
-        parts.push('<button class="x" id="close">✕</button>');
-        parts.push('<div class="t">' + esc(d.label || node.id()) + "</div>");
-        parts.push('<div class="s">' + esc((d.subtype || d.type || "unknown") + (d.file_path ? " · " + d.file_path : "")) + "</div>");
+        parts.push('<button class="x" id="close">x</button>');
+        parts.push('<div class="t">' + esc(data.label || node.id()) + "</div>");
+        parts.push('<div class="s">' + esc((data.subtype || data.type || "unknown") + (data.file_path ? " | " + data.file_path : "")) + "</div>");
         parts.push('<div class="st">Metrics</div>');
-        metric(parts, "Type", String(d.type || "unknown"));
-        if (d.loc != null) metric(parts, "LOC", String(d.loc));
-        if (d.complexity != null) metric(parts, "Complexity", String(d.complexity));
-        if (d.export_count != null) metric(parts, "Exports", String(d.export_count));
-        if (d.import_count != null) metric(parts, "Imports", String(d.import_count));
-        var out = node.outgoers("edge"), inc = node.incomers("edge");
-        if (out.length || inc.length) {
+
+        metric(parts, "Type", String(data.type || "unknown"));
+        if (data.loc != null) {
+          metric(parts, "LOC", String(data.loc));
+        }
+        if (data.complexity != null) {
+          metric(parts, "Complexity", String(data.complexity));
+        }
+        if (data.export_count != null) {
+          metric(parts, "Exports", String(data.export_count));
+        }
+        if (data.import_count != null) {
+          metric(parts, "Imports", String(data.import_count));
+        }
+
+        var outgoing = node.outgoers("edge");
+        var incoming = node.incomers("edge");
+        if (outgoing.length || incoming.length) {
           parts.push('<div class="st">Connections</div>');
-          out.forEach(function(e){ parts.push('<div class="c">→ ' + esc(String(e.data("type") || "edge")) + " " + esc(String(e.target().data("label") || e.target().id())) + "</div>"); });
-          inc.forEach(function(e){ parts.push('<div class="c">← ' + esc(String(e.data("type") || "edge")) + " " + esc(String(e.source().data("label") || e.source().id())) + "</div>"); });
+          outgoing.forEach(function(edge) {
+            parts.push('<div class="c">-> ' + esc(String(edge.data("type") || "edge")) + " " + esc(String(edge.target().data("label") || edge.target().id())) + "</div>");
+          });
+          incoming.forEach(function(edge) {
+            parts.push('<div class="c"><- ' + esc(String(edge.data("type") || "edge")) + " " + esc(String(edge.source().data("label") || edge.source().id())) + "</div>");
+          });
         }
-        if (d.metadata && typeof d.metadata === "object" && Object.keys(d.metadata).length) {
+
+        if (data.metadata && typeof data.metadata === "object" && Object.keys(data.metadata).length) {
           parts.push('<div class="st">Metadata</div>');
-          Object.keys(d.metadata).forEach(function(k){ metric(parts, k, val(d.metadata[k])); });
+          Object.keys(data.metadata).forEach(function(key) {
+            metric(parts, key, val(data.metadata[key]));
+          });
         }
+
         ui.detail.innerHTML = parts.join("");
         ui.detail.classList.add("show");
-        byId("close").addEventListener("click", function(){ clearFocus(); hideDetail(); });
+        byId("close").addEventListener("click", function() {
+          clearFocus();
+          hideDetail();
+        });
       }
 
-      function metric(parts, k, v) { parts.push('<div class="row"><span class="k">' + esc(k) + '</span><span class="val">' + esc(v) + "</span></div>"); }
-      function hideDetail() { ui.detail.classList.remove("show"); }
+      function metric(parts, key, value) {
+        parts.push('<div class="row"><span class="k">' + esc(key) + '</span><span class="val">' + esc(value) + "</span></div>");
+      }
+
+      function hideDetail() {
+        ui.detail.classList.remove("show");
+      }
 
       function buildLayers() {
         ui.layers.innerHTML = '<div class="lt">Layers</div>';
         var list = getLayerList();
-        if (!list.length) { ui.layers.innerHTML += '<div class="lr">No layer nodes found</div>'; return; }
+        if (!list.length) {
+          ui.layers.innerHTML += '<div class="lr">No layer nodes found</div>';
+          return;
+        }
+
         list.forEach(function(layer) {
-          var c = (LAYERS[layer.label] || LAYERS.Other).border;
-          var row = document.createElement("label"); row.className = "lr";
-          var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = true; cb.dataset.layerId = layer.id;
-          var dot = document.createElement("span"); dot.className = "dot"; dot.style.backgroundColor = c;
-          var txt = document.createElement("span"); txt.textContent = layer.label;
-          row.appendChild(cb); row.appendChild(dot); row.appendChild(txt); ui.layers.appendChild(row);
-          cb.addEventListener("change", function() {
-            if (cb.checked) state.hidden.delete(layer.id); else state.hidden.add(layer.id);
-            clearFocus(); hideDetail(); applyVisibility();
+          var color = (LAYER_COLORS[layer.label] || LAYER_COLORS.Other).border;
+          var row = document.createElement("label");
+          row.className = "lr";
+
+          var checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = true;
+          checkbox.dataset.layerId = layer.id;
+
+          var dot = document.createElement("span");
+          dot.className = "dot";
+          dot.style.backgroundColor = color;
+
+          var text = document.createElement("span");
+          text.textContent = layer.label;
+
+          row.appendChild(checkbox);
+          row.appendChild(dot);
+          row.appendChild(text);
+          ui.layers.appendChild(row);
+
+          checkbox.addEventListener("change", function() {
+            if (checkbox.checked) {
+              state.hidden.delete(layer.id);
+            } else {
+              state.hidden.add(layer.id);
+            }
+            clearFocus();
+            hideDetail();
+            applyVisibility();
+            layout();
           });
         });
       }
 
       function getLayerList() {
-        var g = state.graph || {};
-        var fromSnapshot = ((g.snapshot || {}).layer_summary || []).map(function(layer){ return { id: String(layer.id), label: String(layer.label) }; });
-        if (fromSnapshot.length) return fromSnapshot.sort(function(a,b){ return a.label.localeCompare(b.label); });
-        var nodes = ((g.elements || {}).nodes || []);
-        return nodes.filter(function(n){ return n && n.data && n.data.type === "layer"; }).map(function(n){ return { id: String(n.data.id), label: String(n.data.label) }; }).sort(function(a,b){ return a.label.localeCompare(b.label); });
+        var graph = state.graph || {};
+        var fromSnapshot = ((graph.snapshot || {}).layer_summary || []).map(function(layer) {
+          return { id: String(layer.id), label: String(layer.label) };
+        });
+
+        if (fromSnapshot.length) {
+          return fromSnapshot.sort(function(a, b) {
+            return a.label.localeCompare(b.label);
+          });
+        }
+
+        var nodes = ((graph.elements || {}).nodes || []);
+        return nodes
+          .filter(function(node) {
+            return node && node.data && node.data.type === "layer";
+          })
+          .map(function(node) {
+            return { id: String(node.data.id), label: String(node.data.label) };
+          })
+          .sort(function(a, b) {
+            return a.label.localeCompare(b.label);
+          });
       }
 
       function applyVisibility() {
-        var cy = state.cy; if (!cy) return;
+        var cy = state.cy;
+        if (!cy) {
+          return;
+        }
+
         cy.startBatch();
-        cy.nodes().style("display", "element"); cy.edges().style("display", "element");
-        if (!state.symbols) cy.nodes("[type='symbol']").style("display", "none");
-        state.hidden.forEach(function(id){ var layer = cy.getElementById(id); if (layer && layer.length) layer.union(layer.descendants()).style("display", "none"); });
-        cy.edges().forEach(function(e){ var sv = e.source().style("display") !== "none"; var tv = e.target().style("display") !== "none"; e.style("display", sv && tv ? "element" : "none"); });
+        cy.nodes().style("display", "element");
+        cy.edges().style("display", "element");
+
+        if (!state.symbols) {
+          cy.nodes("[type='symbol']").style("display", "none");
+        }
+
+        state.hidden.forEach(function(layerId) {
+          var layerNode = cy.getElementById(layerId);
+          if (layerNode && layerNode.length) {
+            layerNode.union(layerNode.descendants()).style("display", "none");
+          }
+        });
+
+        cy.edges().forEach(function(edge) {
+          var sourceVisible = edge.source().style("display") !== "none";
+          var targetVisible = edge.target().style("display") !== "none";
+          edge.style("display", sourceVisible && targetVisible ? "element" : "none");
+        });
         cy.endBatch();
       }
 
       function wireControls() {
-        ui.fit.addEventListener("click", function(){ var vis = state.cy.elements(":visible"); if (vis.length) state.cy.fit(vis, 50); else state.cy.fit(undefined, 50); });
-        ui.zin.addEventListener("click", function(){ zoom(1.3); });
-        ui.zout.addEventListener("click", function(){ zoom(1 / 1.3); });
-        ui.relayout.addEventListener("click", layout);
-        ui.symbols.addEventListener("click", function(){ state.symbols = !state.symbols; ui.symbols.classList.toggle("on", state.symbols); clearFocus(); hideDetail(); applyVisibility(); if (state.symbols) layout(); });
-        ui.layersbtn.addEventListener("click", function(){ state.layersOpen = !state.layersOpen; ui.layersbtn.classList.toggle("on", state.layersOpen); ui.layers.classList.toggle("open", state.layersOpen); });
+        ui.fit.addEventListener("click", function() {
+          var visible = state.cy.elements(":visible");
+          if (visible.length) {
+            state.cy.fit(visible, 40);
+          } else {
+            state.cy.fit(undefined, 40);
+          }
+        });
+
+        ui.zin.addEventListener("click", function() {
+          zoom(1.3);
+        });
+
+        ui.zout.addEventListener("click", function() {
+          zoom(1 / 1.3);
+        });
+
+        ui.relayout.addEventListener("click", function() {
+          clearFocus();
+          hideDetail();
+          layout();
+        });
+
+        ui.symbols.addEventListener("click", function() {
+          state.symbols = !state.symbols;
+          ui.symbols.classList.toggle("on", state.symbols);
+          clearFocus();
+          hideDetail();
+          applyVisibility();
+          layout();
+        });
+
+        ui.layersbtn.addEventListener("click", function() {
+          state.layersOpen = !state.layersOpen;
+          ui.layersbtn.classList.toggle("on", state.layersOpen);
+          ui.layers.classList.toggle("open", state.layersOpen);
+        });
       }
 
       function zoom(factor) {
-        if (!state.cy) return;
-        var z = clamp(state.cy.zoom() * factor, state.cy.minZoom(), state.cy.maxZoom());
-        state.cy.zoom({ level: z, renderedPosition: { x: state.cy.width() / 2, y: state.cy.height() / 2 } });
+        if (!state.cy) {
+          return;
+        }
+        var level = clamp(state.cy.zoom() * factor, state.cy.minZoom(), state.cy.maxZoom());
+        state.cy.zoom({
+          level: level,
+          renderedPosition: { x: state.cy.width() / 2, y: state.cy.height() / 2 }
+        });
       }
 
-      function drawStats(s) {
-        var langs = Array.isArray(s.languages) && s.languages.length ? s.languages.join(", ") : "unknown";
-        var ms = s.analysis_duration_ms == null ? "?" : String(s.analysis_duration_ms);
-        ui.stats.innerHTML = '<span class="v">' + num(s.total_files) + '</span> files · <span class="v">' + num(s.total_symbols) + '</span> symbols · <span class="v">' + num(s.total_edges) + '</span> edges · <span class="v">' + num(s.total_loc) + "</span> LOC · " + esc(langs) + ' · <span class="v">' + esc(ms) + "</span>ms";
+      function drawStats(snapshot) {
+        var languages = Array.isArray(snapshot.languages) && snapshot.languages.length ? snapshot.languages.join(", ") : "unknown";
+        var ms = snapshot.analysis_duration_ms == null ? "?" : String(snapshot.analysis_duration_ms);
+        ui.stats.innerHTML =
+          '<span class="v">' + num(snapshot.total_files) + "</span> files | " +
+          '<span class="v">' + num(snapshot.total_symbols) + "</span> symbols | " +
+          '<span class="v">' + num(snapshot.total_edges) + "</span> edges | " +
+          '<span class="v">' + num(snapshot.total_loc) + "</span> LOC | " +
+          esc(languages) + " | " +
+          '<span class="v">' + esc(ms) + "</span>ms";
       }
 
       function live() {
         try {
           var protocol = location.protocol === "https:" ? "wss:" : "ws:";
           var ws = new WebSocket(protocol + "//" + location.host);
-          ws.onmessage = function(ev){ if (ev.data === "reload") location.reload(); };
-          ws.onerror = function(){ try { ws.close(); } catch (_) {} };
-          ws.onclose = function(){ setTimeout(live, 2000); };
+          ws.onmessage = function(event) {
+            if (event.data === "reload") {
+              location.reload();
+            }
+          };
+          ws.onerror = function() {
+            try {
+              ws.close();
+            } catch (_) {
+              // No-op.
+            }
+          };
+          ws.onclose = function() {
+            setTimeout(live, 2000);
+          };
         } catch (_) {
           setTimeout(live, 2000);
         }
       }
 
-      function renderInitError(err) {
-        if (ui.loading) ui.loading.style.display = "none";
-        var cyEl = byId("cy");
-        var msg = err && err.message ? err.message : String(err);
-        if (cyEl) {
-          cyEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f87171;font-size:14px;padding:20px;text-align:center;">' + "Failed to load graph: " + esc(msg) + "</div>";
-        } else {
-          fatal("Failed to load graph: " + msg);
+      function renderInitError(error) {
+        if (ui.loading) {
+          ui.loading.style.display = "none";
         }
-        console.error("Rekkon visualizer error:", err);
+
+        var graphEl = byId("cy");
+        var message = error && error.message ? error.message : String(error);
+        if (graphEl) {
+          graphEl.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f87171;font-size:14px;padding:20px;text-align:center;">' +
+            "Failed to load graph: " +
+            esc(message) +
+            "</div>";
+        } else {
+          fatal("Failed to load graph: " + message);
+        }
+        console.error("Rekkon visualizer error:", error);
       }
 
-      function fatal(msg) {
+      function fatal(message) {
         var loading = ui && ui.loading ? ui.loading : byId("loading");
-        if (loading) loading.style.display = "none";
+        if (loading) {
+          loading.style.display = "none";
+        }
+
         var main = ui && ui.main ? ui.main : byId("main");
-        if (!main) { console.error(msg); return; }
-        var n = document.createElement("div"); n.className = "e"; n.textContent = msg; main.appendChild(n);
+        if (!main) {
+          console.error(message);
+          return;
+        }
+
+        var node = document.createElement("div");
+        node.className = "e";
+        node.textContent = message;
+        main.appendChild(node);
       }
-      function val(v) { if (v == null) return ""; if (typeof v === "string") return v; try { return JSON.stringify(v); } catch (_) { return String(v); } }
-      function num(v) { var n = Number(v); return isFinite(n) ? n.toLocaleString() : "0"; }
-      function byId(id) { return document.getElementById(id); }
-      function esc(v) { return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
-      function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+      function val(value) {
+        if (value == null) {
+          return "";
+        }
+        if (typeof value === "string") {
+          return value;
+        }
+        try {
+          return JSON.stringify(value);
+        } catch (_) {
+          return String(value);
+        }
+      }
+
+      function num(value) {
+        var parsed = Number(value);
+        return isFinite(parsed) ? parsed.toLocaleString() : "0";
+      }
+
+      function byId(id) {
+        return document.getElementById(id);
+      }
+
+      function esc(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
     })();
   </script>
 </body>
