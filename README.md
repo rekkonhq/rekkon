@@ -14,7 +14,7 @@ Rekkon parses your codebase using tree-sitter, builds a layered architecture gra
 |---------|-------------|--------|
 | `@rekkon/core` | Shared types, Zod schemas, utilities | ✅ Ready |
 | `@rekkon/parser` | Tree-sitter codebase analysis engine | ✅ Implemented |
-| `@rekkon/cli` | `rekkon analyze` CLI command | ✅ Implemented |
+| `@rekkon/cli` | `rekkon analyze` CLI command | ✅ Ready |
 | `@rekkon/mcp` | MCP server for AI agents | 📋 Planned |
 | `@rekkon/visualizer` | Local Cytoscape.js graph viewer | 🔨 PoC complete, migration pending |
 
@@ -32,10 +32,7 @@ npm install
 npm run build
 
 # Run analysis via CLI
-node packages/cli/dist/index.js analyze ./sample-project
-
-# Open sample-project/visualizer.html in your browser
-# (expects ./sample-project/.archviz from the command above)
+node packages/cli/dist/index.js analyze ./my-project
 ```
 
 ## Architecture

@@ -1,42 +1,27 @@
 #!/usr/bin/env node
 
+import { Command } from 'commander';
 import { analyzeCommand } from './commands/analyze.js';
 
-function printHelp(): void {
-  console.log('rekkon');
-  console.log('');
-  console.log('Usage:');
-  console.log('  rekkon analyze <directory>');
-  console.log('');
-}
+const program = new Command();
 
-async function main(): Promise<void> {
-  const [, , command, ...args] = process.argv;
+program
+  .name('rekkon')
+  .description('Understand your codebase. Architecture analysis for AI agents and developers.')
+  .version('0.1.0');
 
-  if (!command || command === '-h' || command === '--help') {
-    printHelp();
-    process.exit(command ? 0 : 1);
-  }
+program
+  .command('analyze')
+  .description('Analyze a codebase and produce an architecture graph')
+  .argument('[directory]', 'Directory to analyze', '.')
+  .option('-o, --output <path>', 'Output file path', 'rekkon-graph.json')
+  .option('--no-symbols', 'Skip function/class-level symbol extraction')
+  .option('--ignore <patterns...>', 'Additional glob patterns to ignore')
+  .option('--module-depth <n>', 'Maximum depth for module grouping', '2')
+  .option('--json', 'Output raw JSON to stdout instead of writing a file')
+  .action(analyzeCommand);
 
-  switch (command) {
-    case 'analyze': {
-      const targetDir = args[0];
-      if (!targetDir) {
-        printHelp();
-        process.exit(1);
-      }
-      await analyzeCommand(targetDir);
-      return;
-    }
-    default: {
-      console.error(`Unknown command: ${command}`);
-      printHelp();
-      process.exit(1);
-    }
-  }
-}
-
-main().catch((error: unknown) => {
+program.parseAsync().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
   console.error(message);
   process.exit(1);
